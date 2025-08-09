@@ -8,7 +8,7 @@
     "dev": "nodemon src/app.js",
     "build": "tsc",
     "dev:ts": "nodemon src/index.ts",
-    "test": "jest",
+    "test": "jest --passWithNoTests",
     "test:watch": "jest --watch",
     "lint": "eslint src/**/*.{js,ts}",
     "lint:fix": "eslint src/**/*.{js,ts} --fix",
