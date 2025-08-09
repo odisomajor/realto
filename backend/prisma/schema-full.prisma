@@ -1,0 +1,535 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+// User Management
+model User {
+  id                String    @id @default(cuid())
+  email             String    @unique
+  username          String?   @unique
+  firstName         String
+  lastName          String
+  phone             String?
+  avatar            String?
+  emailVerified     Boolean   @default(false)
+  phoneVerified     Boolean   @default(false)
+  isActive          Boolean   @default(true)
+  role              UserRole  @default(USER)
+  
+  // Authentication
+  password          String
+  refreshTokens     RefreshToken[]
+  passwordResetTokens PasswordResetToken[]
+  emailVerificationTokens EmailVerificationToken[]
+  
+  // Profile
+  dateOfBirth       DateTime?
+  gender            Gender?
+  bio               String?
+  website           String?
+  socialLinks       Json?
+  preferences       Json?
+  
+  // Location
+  address           String?
+  city              String?
+  state             String?
+  country           String?
+  zipCode           String?
+  latitude          Float?
+  longitude         Float?
+  
+  // Agent specific fields
+  licenseNumber     String?
+  agencyId          String?
+  agency            Agency?   @relation(fields: [agencyId], references: [id])
+  specializations   PropertyType[]
+  yearsExperience   Int?
+  languages         String[]
+  certifications    String[]
+  
+  // Relationships
+  ownedProperties   Property[] @relation("PropertyOwner")
+  listedProperties  Property[] @relation("PropertyAgent")
+  inquiries         Inquiry[]
+  favorites         Favorite[]
+  reviews           Review[]   @relation("ReviewAuthor")
+  receivedReviews   Review[]   @relation("ReviewTarget")
+  appointments      Appointment[]
+  notifications     Notification[]
+  searchHistory     SearchHistory[]
+  viewHistory       PropertyView[]
+  
+  // Timestamps
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  lastLoginAt       DateTime?
+  
+  @@map("users")
+}
+
+model RefreshToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  
+  @@map("refresh_tokens")
+}
+
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now())
+  
+  @@map("password_reset_tokens")
+}
+
+model EmailVerificationToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now())
+  
+  @@map("email_verification_tokens")
+}
+
+// Agency Management
+model Agency {
+  id            String   @id @default(cuid())
+  name          String
+  description   String?
+  logo          String?
+  website       String?
+  email         String
+  phone         String
+  
+  // Location
+  address       String
+  city          String
+  state         String
+  country       String
+  zipCode       String
+  latitude      Float?
+  longitude     Float?
+  
+  // Business Info
+  licenseNumber String?
+  established   DateTime?
+  employeeCount Int?
+  
+  // Relationships
+  agents        User[]
+  properties    Property[]
+  
+  // Timestamps
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  @@map("agencies")
+}
+
+// Property Management
+model Property {
+  id                String         @id @default(cuid())
+  title             String
+  description       String
+  slug              String         @unique
+  
+  // Basic Info
+  propertyType      PropertyType
+  listingType       ListingType
+  status            PropertyStatus @default(ACTIVE)
+  
+  // Pricing
+  price             Decimal
+  pricePerSqft      Decimal?
+  currency          String         @default("USD")
+  priceHistory      Json?
+  
+  // Location
+  address           String
+  city              String
+  state             String
+  country           String
+  zipCode           String
+  neighborhood      String?
+  latitude          Float
+  longitude         Float
+  
+  // Property Details
+  bedrooms          Int?
+  bathrooms         Float?
+  halfBathrooms     Int?
+  squareFootage     Int?
+  lotSize           Float?
+  yearBuilt         Int?
+  stories           Int?
+  garage            Int?
+  parking           String?
+  
+  // Features & Amenities
+  features          String[]
+  amenities         String[]
+  appliances        String[]
+  utilities         String[]
+  heating           String?
+  cooling           String?
+  flooring          String[]
+  
+  // Property Condition
+  condition         PropertyCondition?
+  renovated         Boolean        @default(false)
+  renovationYear    Int?
+  
+  // Media
+  images            PropertyImage[]
+  videos            PropertyVideo[]
+  virtualTour       String?
+  floorPlan         String?
+  
+  // SEO & Marketing
+  metaTitle         String?
+  metaDescription   String?
+  keywords          String[]
+  featured          Boolean        @default(false)
+  priority          Int            @default(0)
+  
+  // Relationships
+  ownerId           String
+  owner             User           @relation("PropertyOwner", fields: [ownerId], references: [id])
+  agentId           String?
+  agent             User?          @relation("PropertyAgent", fields: [agentId], references: [id])
+  agencyId          String?
+  agency            Agency?        @relation(fields: [agencyId], references: [id])
+  
+  inquiries         Inquiry[]
+  favorites         Favorite[]
+  reviews           Review[]
+  appointments      Appointment[]
+  views             PropertyView[]
+  
+  // Timestamps
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+  publishedAt       DateTime?
+  soldAt            DateTime?
+  
+  @@map("properties")
+}
+
+model PropertyImage {
+  id          String   @id @default(cuid())
+  url         String
+  alt         String?
+  caption     String?
+  order       Int      @default(0)
+  isMain      Boolean  @default(false)
+  propertyId  String
+  property    Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  
+  @@map("property_images")
+}
+
+model PropertyVideo {
+  id          String   @id @default(cuid())
+  url         String
+  title       String?
+  description String?
+  thumbnail   String?
+  duration    Int?
+  order       Int      @default(0)
+  propertyId  String
+  property    Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  
+  @@map("property_videos")
+}
+
+// Inquiry & Communication
+model Inquiry {
+  id          String        @id @default(cuid())
+  type        InquiryType
+  status      InquiryStatus @default(PENDING)
+  subject     String?
+  message     String
+  
+  // Contact Info
+  name        String?
+  email       String?
+  phone       String?
+  
+  // Inquiry Details
+  preferredContact String?
+  timeframe   String?
+  financing   String?
+  additionalInfo Json?
+  
+  // Relationships
+  userId      String?
+  user        User?         @relation(fields: [userId], references: [id])
+  propertyId  String
+  property    Property      @relation(fields: [propertyId], references: [id])
+  
+  // Response
+  response    String?
+  respondedAt DateTime?
+  
+  // Timestamps
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  
+  @@map("inquiries")
+}
+
+// Favorites & Saved Searches
+model Favorite {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  propertyId String
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  notes      String?
+  createdAt  DateTime @default(now())
+  
+  @@unique([userId, propertyId])
+  @@map("favorites")
+}
+
+model SearchHistory {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  query       String
+  filters     Json
+  results     Int
+  location    String?
+  createdAt   DateTime @default(now())
+  
+  @@map("search_history")
+}
+
+// Reviews & Ratings
+model Review {
+  id          String     @id @default(cuid())
+  rating      Int        // 1-5 stars
+  title       String?
+  comment     String
+  type        ReviewType
+  
+  // Relationships
+  authorId    String
+  author      User       @relation("ReviewAuthor", fields: [authorId], references: [id])
+  targetId    String     // Can be User (agent) or Property
+  target      User?      @relation("ReviewTarget", fields: [targetId], references: [id])
+  propertyId  String?
+  property    Property?  @relation(fields: [propertyId], references: [id])
+  
+  // Moderation
+  approved    Boolean    @default(false)
+  flagged     Boolean    @default(false)
+  
+  // Timestamps
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  
+  @@map("reviews")
+}
+
+// Appointments & Showings
+model Appointment {
+  id            String            @id @default(cuid())
+  type          AppointmentType
+  status        AppointmentStatus @default(SCHEDULED)
+  
+  // Scheduling
+  scheduledAt   DateTime
+  duration      Int               @default(60) // minutes
+  timezone      String?
+  
+  // Details
+  notes         String?
+  location      String?
+  meetingLink   String?
+  
+  // Relationships
+  userId        String
+  user          User              @relation(fields: [userId], references: [id])
+  propertyId    String?
+  property      Property?         @relation(fields: [propertyId], references: [id])
+  
+  // Timestamps
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+  completedAt   DateTime?
+  cancelledAt   DateTime?
+  
+  @@map("appointments")
+}
+
+// Analytics & Tracking
+model PropertyView {
+  id         String   @id @default(cuid())
+  userId     String?
+  user       User?    @relation(fields: [userId], references: [id])
+  propertyId String
+  property   Property @relation(fields: [propertyId], references: [id])
+  
+  // Tracking Data
+  ipAddress  String?
+  userAgent  String?
+  referrer   String?
+  duration   Int?     // seconds
+  
+  createdAt  DateTime @default(now())
+  
+  @@map("property_views")
+}
+
+// Notifications
+model Notification {
+  id        String             @id @default(cuid())
+  type      NotificationType
+  title     String
+  message   String
+  data      Json?
+  
+  // Status
+  read      Boolean            @default(false)
+  sent      Boolean            @default(false)
+  
+  // Relationships
+  userId    String
+  user      User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Timestamps
+  createdAt DateTime           @default(now())
+  readAt    DateTime?
+  sentAt    DateTime?
+  
+  @@map("notifications")
+}
+
+// Enums
+enum UserRole {
+  USER
+  AGENT
+  ADMIN
+  SUPER_ADMIN
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+  PREFER_NOT_TO_SAY
+}
+
+enum PropertyType {
+  HOUSE
+  APARTMENT
+  CONDO
+  TOWNHOUSE
+  VILLA
+  DUPLEX
+  STUDIO
+  LOFT
+  PENTHOUSE
+  COMMERCIAL
+  OFFICE
+  RETAIL
+  WAREHOUSE
+  LAND
+  FARM
+  OTHER
+}
+
+enum ListingType {
+  SALE
+  RENT
+  LEASE
+}
+
+enum PropertyStatus {
+  DRAFT
+  ACTIVE
+  PENDING
+  SOLD
+  RENTED
+  EXPIRED
+  WITHDRAWN
+}
+
+enum PropertyCondition {
+  EXCELLENT
+  GOOD
+  FAIR
+  NEEDS_WORK
+  NEW_CONSTRUCTION
+}
+
+enum InquiryType {
+  GENERAL
+  VIEWING
+  PRICE
+  FINANCING
+  NEIGHBORHOOD
+  OTHER
+}
+
+enum InquiryStatus {
+  PENDING
+  RESPONDED
+  CLOSED
+}
+
+enum ReviewType {
+  PROPERTY
+  AGENT
+  AGENCY
+}
+
+enum AppointmentType {
+  VIEWING
+  CONSULTATION
+  INSPECTION
+  SIGNING
+  OTHER
+}
+
+enum AppointmentStatus {
+  SCHEDULED
+  CONFIRMED
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+}
+
+enum NotificationType {
+  INQUIRY
+  APPOINTMENT
+  REVIEW
+  FAVORITE
+  PRICE_CHANGE
+  NEW_LISTING
+  SYSTEM
+  MARKETING
+}

@@ -1,0 +1,228 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+// User Management
+model User {
+  id            String   @id @default(cuid())
+  email         String   @unique
+  firstName     String
+  lastName      String
+  phone         String?
+  avatar        String?
+  role          String   @default("USER") // USER, AGENT, ADMIN, SUPER_ADMIN
+  password      String
+  emailVerified Boolean  @default(false)
+  phoneVerified Boolean  @default(false)
+  isActive      Boolean  @default(true)
+  
+  // 2FA Fields
+  twoFactorEnabled Boolean @default(false)
+  twoFactorSecret  String?
+  backupCodes      String? // JSON array as string
+  
+  // Profile
+  bio           String?
+  
+  // Location
+  address       String?
+  city          String?
+  county        String?
+  
+  // Agent specific fields
+  licenseNumber String?
+  yearsExperience Int?
+  
+  // Property browsing counter for mandatory registration
+  propertyViewCount Int @default(0)
+  
+  // Relationships
+  properties    Property[]
+  inquiries     Inquiry[]
+  favorites     Favorite[]
+  notifications Notification[]
+  refreshTokens RefreshToken[]
+  securityEvents SecurityEvent[]
+  browsingSessions BrowsingSession[]
+  
+  // Timestamps
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  lastLoginAt   DateTime?
+  
+  @@map("users")
+}
+
+// Refresh Token Management
+model RefreshToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  
+  @@map("refresh_tokens")
+}
+
+// Security Events Logging
+model SecurityEvent {
+  id        String   @id @default(cuid())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      String   // login, logout, password_change, 2fa_enabled, failed_login
+  ipAddress String
+  userAgent String
+  details   String?  // JSON as string
+  createdAt DateTime @default(now())
+  
+  @@map("security_events")
+}
+
+// Property Management
+model Property {
+  id            String   @id @default(cuid())
+  title         String
+  description   String
+  slug          String   @unique
+  
+  // Basic Info
+  propertyType  String   // HOUSE, APARTMENT, COMMERCIAL, LAND, WAREHOUSE, CONTAINER
+  listingType   String   // FOR_SALE, FOR_RENT
+  status        String   @default("ACTIVE") // ACTIVE, SOLD, RENTED, PENDING, INACTIVE
+  
+  // Pricing
+  price         Float
+  currency      String   @default("KES")
+  
+  // Location
+  address       String
+  city          String
+  county        String
+  latitude      Float?
+  longitude     Float?
+  
+  // Property Details
+  bedrooms      Int?
+  bathrooms     Int?
+  squareFootage Int?
+  yearBuilt     Int?
+  
+  // Features (JSON as string for SQLite)
+  features      String?  // JSON array as string
+  amenities     String?  // JSON array as string
+  
+  // Media (JSON as string for SQLite)
+  images        String?  // JSON array as string
+  virtualTour   String?
+  
+  // Relationships
+  ownerId       String
+  owner         User     @relation(fields: [ownerId], references: [id])
+  inquiries     Inquiry[]
+  favorites     Favorite[]
+  
+  // SEO & Marketing
+  featured      Boolean  @default(false)
+  views         Int      @default(0)
+  
+  // Timestamps
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  @@map("properties")
+}
+
+// Inquiry Management
+model Inquiry {
+  id          String   @id @default(cuid())
+  name        String
+  email       String
+  phone       String?
+  message     String
+  
+  // Relationships
+  propertyId  String
+  property    Property @relation(fields: [propertyId], references: [id])
+  userId      String?
+  user        User?    @relation(fields: [userId], references: [id])
+  
+  // Status
+  status      String   @default("NEW") // NEW, CONTACTED, CLOSED
+  
+  // Timestamps
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@map("inquiries")
+}
+
+// Favorites
+model Favorite {
+  id         String   @id @default(cuid())
+  
+  // Relationships
+  userId     String
+  user       User     @relation(fields: [userId], references: [id])
+  propertyId String
+  property   Property @relation(fields: [propertyId], references: [id])
+  
+  // Timestamps
+  createdAt  DateTime @default(now())
+  
+  @@unique([userId, propertyId])
+  @@map("favorites")
+}
+
+// Notifications
+model Notification {
+  id        String   @id @default(cuid())
+  type      String   // INQUIRY, APPOINTMENT, REVIEW, FAVORITE, PRICE_CHANGE, NEW_LISTING, SYSTEM, MARKETING
+  title     String
+  message   String
+  data      String?  // JSON as string for SQLite
+  
+  // Status
+  read      Boolean  @default(false)
+  sent      Boolean  @default(false)
+  
+  // Relationships
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Timestamps
+  createdAt DateTime @default(now())
+  readAt    DateTime?
+  sentAt    DateTime?
+  
+  @@map("notifications")
+}
+
+// Browsing Session Management
+model BrowsingSession {
+  id                String   @id @default(cuid())
+  sessionId         String   @unique // Browser session identifier
+  userId            String?  // Optional - for authenticated users
+  user              User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Session tracking
+  propertiesViewed  String   // JSON array of property IDs as string
+  viewCount         Int      @default(0)
+  registrationPromptShown Boolean @default(false)
+  
+  // Session metadata
+  ipAddress         String?
+  userAgent         String?
+  
+  // Timestamps
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  expiresAt         DateTime // Session expiration
+  
+  @@map("browsing_sessions")
+}

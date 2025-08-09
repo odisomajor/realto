@@ -1,0 +1,107 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["DOM", "DOM.Iterable", "ES2022"],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "module": "ESNext",
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "preserve",
+    "incremental": true,
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"],
+      "@backend/*": ["./backend/src/*"],
+      "@frontend/*": ["./frontend/src/*"],
+      "@shared/*": ["./shared/*"],
+      "@config/*": ["./config/*"],
+      "@types/*": ["./types/*"],
+      "@utils/*": ["./utils/*"],
+      "@components/*": ["./frontend/src/components/*"],
+      "@pages/*": ["./frontend/src/pages/*"],
+      "@hooks/*": ["./frontend/src/hooks/*"],
+      "@styles/*": ["./frontend/src/styles/*"],
+      "@public/*": ["./frontend/public/*"],
+      "@api/*": ["./backend/src/api/*"],
+      "@models/*": ["./backend/src/models/*"],
+      "@services/*": ["./backend/src/services/*"],
+      "@middleware/*": ["./backend/src/middleware/*"],
+      "@controllers/*": ["./backend/src/controllers/*"],
+      "@routes/*": ["./backend/src/routes/*"],
+      "@database/*": ["./backend/src/database/*"],
+      "@prisma/*": ["./backend/prisma/*"]
+    },
+    "types": ["node", "jest", "@types/jest"],
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "outDir": "./dist",
+    "removeComments": false,
+    "noImplicitAny": true,
+    "noImplicitReturns": true,
+    "noImplicitThis": true,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "exactOptionalPropertyTypes": false,
+    "noImplicitOverride": true,
+    "noPropertyAccessFromIndexSignature": false,
+    "noUncheckedIndexedAccess": false,
+    "allowUnreachableCode": false,
+    "allowUnusedLabels": false,
+    "alwaysStrict": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitUseStrict": false,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true
+  },
+  "include": [
+    "**/*.ts",
+    "**/*.tsx",
+    "**/*.js",
+    "**/*.jsx",
+    ".next/types/**/*.ts",
+    "next-env.d.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    ".next",
+    "dist",
+    "build",
+    "coverage",
+    "**/*.min.js",
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "**/*.spec.ts",
+    "**/*.spec.tsx",
+    "cypress",
+    "android",
+    "ios"
+  ],
+  "references": [
+    {
+      "path": "./backend"
+    },
+    {
+      "path": "./frontend"
+    }
+  ],
+  "ts-node": {
+    "esm": true,
+    "experimentalSpecifierResolution": "node",
+    "compilerOptions": {
+      "module": "ESNext",
+      "moduleResolution": "node"
+    }
+  }
+}
