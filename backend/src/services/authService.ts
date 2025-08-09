@@ -700,6 +700,305 @@ export class AuthService {
     // TODO: Implement email sending logic
     logger.info('Password reset email would be sent', { email, token });
   }
+
+  /**
+   * Setup Two-Factor Authentication
+   */
+  async setupTwoFactor(userId: string, method: 'totp' | 'sms'): Promise<{ secret?: string; qrCode?: string; message?: string }> {
+    try {
+      const user = await prisma.user.findUnique({
+        where: { id: userId }
+      });
+
+      if (!user) {
+        throw new AppError('User not found', 404);
+      }
+
+      if (method === 'totp') {
+        const speakeasy = require('speakeasy');
+        const qrcode = require('qrcode');
+
+        // Generate secret
+        const secret = speakeasy.generateSecret({
+          name: `RealEstate (${user.email})`,
+          issuer: 'RealEstate App',
+          length: 32
+        });
+
+        // Generate QR code
+        const qrCode = await qrcode.toDataURL(secret.otpauth_url);
+
+        // Store temporary secret (not activated until verified)
+        await cache.set(`2fa_setup:${userId}`, JSON.stringify({
+          secret: secret.base32,
+          method: 'totp'
+        }), 600); // 10 minutes
+
+        return {
+          secret: secret.base32,
+          qrCode
+        };
+      } else if (method === 'sms') {
+        if (!user.phone) {
+          throw new AppError('Phone number is required for SMS 2FA', 400);
+        }
+
+        // Generate and send SMS code
+        const code = Math.floor(100000 + Math.random() * 900000).toString();
+        
+        // Store temporary code
+        await cache.set(`2fa_setup:${userId}`, JSON.stringify({
+          code,
+          method: 'sms',
+          phone: user.phone
+        }), 600); // 10 minutes
+
+        // Send SMS
+        const { smsService } = await import('@/services/smsService');
+        await smsService.sendSMS(user.phone, `Your RealEstate 2FA setup code is: ${code}`);
+
+        return {
+          message: 'SMS code sent to your phone number'
+        };
+      }
+
+      throw new AppError('Invalid 2FA method', 400);
+    } catch (error) {
+      logger.error('Error setting up 2FA', { error, userId, method });
+      throw error;
+    }
+  }
+
+  /**
+   * Verify Two-Factor Authentication Setup
+   */
+  async verifyTwoFactorSetup(userId: string, code: string): Promise<{ backupCodes: string[] }> {
+    try {
+      const setupData = await cache.get(`2fa_setup:${userId}`);
+      if (!setupData) {
+        throw new AppError('2FA setup session expired', 400);
+      }
+
+      const setup = JSON.parse(setupData);
+      let isValid = false;
+
+      if (setup.method === 'totp') {
+        const speakeasy = require('speakeasy');
+        isValid = speakeasy.totp.verify({
+          secret: setup.secret,
+          encoding: 'base32',
+          token: code,
+          window: 2
+        });
+      } else if (setup.method === 'sms') {
+        isValid = setup.code === code;
+      }
+
+      if (!isValid) {
+        throw new AppError('Invalid verification code', 400);
+      }
+
+      // Generate backup codes
+      const backupCodes = Array.from({ length: 8 }, () => 
+        Math.random().toString(36).substring(2, 10).toUpperCase()
+      );
+
+      // Hash backup codes for storage
+      const hashedBackupCodes = await Promise.all(
+        backupCodes.map(code => bcrypt.hash(code, 10))
+      );
+
+      // Save 2FA settings
+      await prisma.user.update({
+        where: { id: userId },
+        data: {
+          twoFactorEnabled: true,
+          twoFactorMethod: setup.method,
+          twoFactorSecret: setup.method === 'totp' ? setup.secret : null,
+          backupCodes: hashedBackupCodes
+        }
+      });
+
+      // Clear setup session
+      await cache.del(`2fa_setup:${userId}`);
+
+      logger.info('2FA setup completed', { userId, method: setup.method });
+
+      return { backupCodes };
+    } catch (error) {
+      logger.error('Error verifying 2FA setup', { error, userId });
+      throw error;
+    }
+  }
+
+  /**
+   * Verify Two-Factor Authentication Code
+   */
+  async verifyTwoFactor(userId: string, code: string): Promise<boolean> {
+    try {
+      const user = await prisma.user.findUnique({
+        where: { id: userId }
+      });
+
+      if (!user || !user.twoFactorEnabled) {
+        throw new AppError('2FA not enabled for this user', 400);
+      }
+
+      // Check if it's a backup code
+      if (user.backupCodes && user.backupCodes.length > 0) {
+        for (let i = 0; i < user.backupCodes.length; i++) {
+          const isBackupCode = await bcrypt.compare(code, user.backupCodes[i]);
+          if (isBackupCode) {
+            // Remove used backup code
+            const updatedBackupCodes = [...user.backupCodes];
+            updatedBackupCodes.splice(i, 1);
+            
+            await prisma.user.update({
+              where: { id: userId },
+              data: { backupCodes: updatedBackupCodes }
+            });
+
+            logger.info('2FA verified with backup code', { userId });
+            return true;
+          }
+        }
+      }
+
+      // Verify regular 2FA code
+      if (user.twoFactorMethod === 'totp' && user.twoFactorSecret) {
+        const speakeasy = require('speakeasy');
+        const isValid = speakeasy.totp.verify({
+          secret: user.twoFactorSecret,
+          encoding: 'base32',
+          token: code,
+          window: 2
+        });
+
+        if (isValid) {
+          logger.info('2FA verified with TOTP', { userId });
+          return true;
+        }
+      } else if (user.twoFactorMethod === 'sms') {
+        // For SMS, we need to check against a recently sent code
+        const smsCodeData = await cache.get(`2fa_sms:${userId}`);
+        if (smsCodeData) {
+          const { code: expectedCode } = JSON.parse(smsCodeData);
+          if (expectedCode === code) {
+            await cache.del(`2fa_sms:${userId}`);
+            logger.info('2FA verified with SMS', { userId });
+            return true;
+          }
+        }
+      }
+
+      logger.warn('Invalid 2FA code attempt', { userId });
+      return false;
+    } catch (error) {
+      logger.error('Error verifying 2FA', { error, userId });
+      throw error;
+    }
+  }
+
+  /**
+   * Send SMS 2FA Code
+   */
+  async sendSms2FA(userId: string): Promise<void> {
+    try {
+      const user = await prisma.user.findUnique({
+        where: { id: userId }
+      });
+
+      if (!user || !user.twoFactorEnabled || user.twoFactorMethod !== 'sms') {
+        throw new AppError('SMS 2FA not enabled for this user', 400);
+      }
+
+      if (!user.phone) {
+        throw new AppError('Phone number not found', 400);
+      }
+
+      // Generate SMS code
+      const code = Math.floor(100000 + Math.random() * 900000).toString();
+      
+      // Store code temporarily
+      await cache.set(`2fa_sms:${userId}`, JSON.stringify({ code }), 300); // 5 minutes
+
+      // Send SMS
+      const { smsService } = await import('@/services/smsService');
+      await smsService.sendSMS(user.phone, `Your RealEstate login code is: ${code}`);
+
+      logger.info('SMS 2FA code sent', { userId });
+    } catch (error) {
+      logger.error('Error sending SMS 2FA code', { error, userId });
+      throw error;
+    }
+  }
+
+  /**
+   * Disable Two-Factor Authentication
+   */
+  async disableTwoFactor(userId: string, code: string): Promise<void> {
+    try {
+      // Verify the 2FA code before disabling
+      const isValid = await this.verifyTwoFactor(userId, code);
+      if (!isValid) {
+        throw new AppError('Invalid 2FA code', 400);
+      }
+
+      // Disable 2FA
+      await prisma.user.update({
+        where: { id: userId },
+        data: {
+          twoFactorEnabled: false,
+          twoFactorMethod: null,
+          twoFactorSecret: null,
+          backupCodes: []
+        }
+      });
+
+      logger.info('2FA disabled', { userId });
+    } catch (error) {
+      logger.error('Error disabling 2FA', { error, userId });
+      throw error;
+    }
+  }
+
+  /**
+   * Generate new backup codes
+   */
+  async generateBackupCodes(userId: string): Promise<string[]> {
+    try {
+      const user = await prisma.user.findUnique({
+        where: { id: userId }
+      });
+
+      if (!user || !user.twoFactorEnabled) {
+        throw new AppError('2FA not enabled for this user', 400);
+      }
+
+      // Generate new backup codes
+      const backupCodes = Array.from({ length: 8 }, () => 
+        Math.random().toString(36).substring(2, 10).toUpperCase()
+      );
+
+      // Hash backup codes for storage
+      const hashedBackupCodes = await Promise.all(
+        backupCodes.map(code => bcrypt.hash(code, 10))
+      );
+
+      // Update user with new backup codes
+      await prisma.user.update({
+        where: { id: userId },
+        data: { backupCodes: hashedBackupCodes }
+      });
+
+      logger.info('New backup codes generated', { userId });
+
+      return backupCodes;
+    } catch (error) {
+      logger.error('Error generating backup codes', { error, userId });
+      throw error;
+    }
+  }
 }
 
 export const authService = new AuthService();

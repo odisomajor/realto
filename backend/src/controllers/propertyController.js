@@ -1,5 +1,6 @@
 const { PrismaClient } = require('@prisma/client');
 const slugify = require('slugify');
+const geocodingService = require('../services/geocodingService');
 
 const prisma = new PrismaClient();
 
@@ -231,6 +232,35 @@ const createProperty = async (req, res) => {
     // Generate slug
     const slug = await generateSlug(title);
 
+    // Auto-geocode if coordinates not provided but address is available
+    let finalLatitude = latitude;
+    let finalLongitude = longitude;
+    let finalAddress = address;
+    let finalCity = city;
+    let finalCounty = county;
+
+    if (!latitude || !longitude) {
+      if (address) {
+        try {
+          const geocodeResult = await geocodingService.geocodeAddress(address);
+          finalLatitude = geocodeResult.lat;
+          finalLongitude = geocodeResult.lng;
+          finalAddress = geocodeResult.formattedAddress;
+          
+          // Use geocoded location data if not provided
+          if (!city && geocodeResult.city) {
+            finalCity = geocodeResult.city;
+          }
+          if (!county && geocodeResult.county) {
+            finalCounty = geocodeResult.county;
+          }
+        } catch (geocodeError) {
+          console.warn('Geocoding failed:', geocodeError.message);
+          // Continue without coordinates if geocoding fails
+        }
+      }
+    }
+
     const property = await prisma.property.create({
       data: {
         title,
@@ -239,9 +269,9 @@ const createProperty = async (req, res) => {
         propertyType,
         listingType,
         price,
-        address,
-        city,
-        county,
+        address: finalAddress,
+        city: finalCity,
+        county: finalCounty,
         bedrooms,
         bathrooms,
         squareFootage,
@@ -250,8 +280,8 @@ const createProperty = async (req, res) => {
         amenities: amenities ? JSON.stringify(amenities) : null,
         images: images ? JSON.stringify(images) : null,
         virtualTour,
-        latitude,
-        longitude,
+        latitude: finalLatitude,
+        longitude: finalLongitude,
         ownerId: req.user.id
       },
       include: {

@@ -388,49 +388,87 @@ export const revokeSession = catchAsync(async (req: Request, res: Response) => {
 });
 
 /**
- * Enable two-factor authentication (placeholder for future implementation)
+ * Setup two-factor authentication
  */
-export const enableTwoFactor = catchAsync(async (req: Request, res: Response) => {
+export const setupTwoFactor = catchAsync(async (req: Request, res: Response) => {
   const userId = req.user!.id;
+  const { method } = req.body;
 
-  // TODO: Implement 2FA setup
-  logger.info('2FA setup requested', { userId });
+  if (!method || !['totp', 'sms'].includes(method)) {
+    return res.status(400).json({
+      success: false,
+      message: 'Method must be either "totp" or "sms"'
+    });
+  }
+
+  const result = await authService.setupTwoFactor(userId, method);
+
+  logger.info('2FA setup initiated', { userId, method });
 
   res.json({
     success: true,
     message: '2FA setup initiated',
-    qrCode: 'placeholder-qr-code-url',
-    backupCodes: ['code1', 'code2', 'code3']
+    data: result
   });
 });
 
 /**
- * Disable two-factor authentication (placeholder for future implementation)
+ * Verify two-factor authentication setup
  */
-export const disableTwoFactor = catchAsync(async (req: Request, res: Response) => {
+export const verifyTwoFactorSetup = catchAsync(async (req: Request, res: Response) => {
   const userId = req.user!.id;
-  const { password, code } = req.body;
+  const { method, code } = req.body;
 
-  if (!password || !code) {
+  if (!method || !code) {
     return res.status(400).json({
       success: false,
-      message: 'Password and 2FA code are required'
+      message: 'Method and code are required'
     });
   }
 
-  // TODO: Implement 2FA disable
-  logger.info('2FA disable requested', { userId });
+  const result = await authService.verifyTwoFactorSetup(userId, method, code);
+
+  logger.info('2FA setup verified', { userId, method });
 
   res.json({
     success: true,
-    message: '2FA disabled successfully'
+    message: '2FA enabled successfully',
+    data: result
   });
 });
 
 /**
- * Verify two-factor authentication code (placeholder for future implementation)
+ * Verify two-factor authentication code during login
  */
 export const verifyTwoFactor = catchAsync(async (req: Request, res: Response) => {
+  const { method, code, loginToken } = req.body;
+
+  if (!method || !code || !loginToken) {
+    return res.status(400).json({
+      success: false,
+      message: 'Method, code, and login token are required'
+    });
+  }
+
+  const result = await authService.verifyTwoFactor(loginToken, method, code);
+
+  logger.info('2FA verification successful', { userId: result.user.id });
+
+  res.json({
+    success: true,
+    message: '2FA verification successful',
+    data: {
+      user: result.user,
+      tokens: result.tokens
+    }
+  });
+});
+
+/**
+ * Disable two-factor authentication
+ */
+export const disableTwoFactor = catchAsync(async (req: Request, res: Response) => {
+  const userId = req.user!.id;
   const { code } = req.body;
 
   if (!code) {
@@ -440,9 +478,29 @@ export const verifyTwoFactor = catchAsync(async (req: Request, res: Response) =>
     });
   }
 
-  // TODO: Implement 2FA verification
+  await authService.disableTwoFactor(userId, code);
+
+  logger.info('2FA disabled', { userId });
+
   res.json({
     success: true,
-    message: '2FA code verified successfully'
+    message: '2FA disabled successfully'
+  });
+});
+
+/**
+ * Generate backup codes
+ */
+export const generateBackupCodes = catchAsync(async (req: Request, res: Response) => {
+  const userId = req.user!.id;
+
+  const backupCodes = await authService.generateBackupCodes(userId);
+
+  logger.info('Backup codes generated', { userId });
+
+  res.json({
+    success: true,
+    message: 'Backup codes generated successfully',
+    data: { backupCodes }
   });
 });

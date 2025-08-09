@@ -1,9 +1,11 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { useAuth } from '@/lib/auth'
 import { propertyApi, inquiryApi } from '@/lib/api'
 import ProtectedRoute from '@/components/auth/ProtectedRoute'
+import UserProfile from '@/components/auth/UserProfile'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/badge'
@@ -19,7 +21,11 @@ import {
   Building,
   DollarSign,
   Calendar,
-  Sparkles
+  Sparkles,
+  User,
+  Settings,
+  LogOut,
+  Shield
 } from 'lucide-react'
 import Link from 'next/link'
 
@@ -33,11 +39,13 @@ interface DashboardStats {
 }
 
 export default function Dashboard() {
-  const { user } = useAuth()
+  const { user, logout } = useAuth()
+  const router = useRouter()
   const [stats, setStats] = useState<DashboardStats>({})
   const [recentProperties, setRecentProperties] = useState([])
   const [recentInquiries, setRecentInquiries] = useState([])
   const [loading, setLoading] = useState(true)
+  const [showProfile, setShowProfile] = useState(false)
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -96,20 +104,74 @@ export default function Dashboard() {
     )
   }
 
+  const handleLogout = async () => {
+    try {
+      await logout()
+      router.push('/')
+    } catch (error) {
+      console.error('Logout failed:', error)
+    }
+  }
+
+  if (showProfile) {
+    return (
+      <ProtectedRoute>
+        <div className="min-h-screen bg-gray-50">
+          <div className="bg-white shadow">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="flex justify-between items-center py-4">
+                <h1 className="text-xl font-semibold text-gray-900">Account Settings</h1>
+                <Button
+                  variant="outline"
+                  onClick={() => setShowProfile(false)}
+                >
+                  Back to Dashboard
+                </Button>
+              </div>
+            </div>
+          </div>
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <UserProfile onClose={() => setShowProfile(false)} />
+          </div>
+        </div>
+      </ProtectedRoute>
+    )
+  }
+
   return (
     <ProtectedRoute>
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            Welcome back, {user?.firstName}!
-          </h1>
-          <p className="text-gray-600">
-            {user?.role === 'AGENT' 
-              ? 'Manage your properties and track inquiries' 
-              : 'Discover your dream property and track your favorites'
-            }
-          </p>
+        <div className="mb-8 flex justify-between items-center">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">
+              Welcome back, {user?.firstName}!
+            </h1>
+            <p className="text-gray-600">
+              {user?.role === 'AGENT' 
+                ? 'Manage your properties and track inquiries' 
+                : 'Discover your dream property and track your favorites'
+              }
+            </p>
+          </div>
+          <div className="flex items-center space-x-4">
+            <Button
+              variant="outline"
+              onClick={() => setShowProfile(true)}
+              className="flex items-center space-x-2"
+            >
+              <User className="h-4 w-4" />
+              <span>Profile</span>
+            </Button>
+            <Button
+              variant="outline"
+              onClick={handleLogout}
+              className="flex items-center space-x-2"
+            >
+              <LogOut className="h-4 w-4" />
+              <span>Logout</span>
+            </Button>
+          </div>
         </div>
 
         {/* Stats Cards */}
@@ -233,7 +295,7 @@ export default function Dashboard() {
                     View Inquiries
                   </Button>
                 </Link>
-              <>
+              </>
             ) : (
               <>
                 <Link href="/properties">
@@ -390,6 +452,27 @@ export default function Dashboard() {
           </TabsContent>
         </Tabs>
       </div>
+      
+      {/* User Profile Modal */}
+      {showProfile && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto m-4">
+            <div className="p-6">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-2xl font-bold">User Profile</h2>
+                <Button
+                  variant="outline"
+                  onClick={() => setShowProfile(false)}
+                  className="flex items-center space-x-2"
+                >
+                  <span>Close</span>
+                </Button>
+              </div>
+              <UserProfile />
+            </div>
+          </div>
+        </div>
+      )}
     </ProtectedRoute>
   )
 }

@@ -8,17 +8,21 @@ import { Input } from '@/components/ui/Input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
 import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
 import { useAuth } from '@/lib/auth';
+import TwoFactorSetup from '@/components/auth/TwoFactorSetup';
 
 export default function LoginPage() {
   const router = useRouter();
   const { login, isAuthenticated, isLoading: authLoading, hasHydrated } = useAuth();
+  const [step, setStep] = useState<'login' | '2fa-verify' | '2fa-setup'>('login');
   const [formData, setFormData] = useState({
     email: '',
     password: '',
+    rememberMe: false,
   });
+  const [twoFactorCode, setTwoFactorCode] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   // Redirect if already authenticated (only after hydration)
   useEffect(() => {
@@ -27,27 +31,187 @@ export default function LoginPage() {
     }
   }, [hasHydrated, isAuthenticated, router]);
 
+  const validateForm = () => {
+    const newErrors: Record<string, string> = {};
+
+    if (!formData.email.trim()) {
+      newErrors.email = 'Email is required';
+    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+      newErrors.email = 'Email is invalid';
+    }
+
+    if (!formData.password) {
+      newErrors.password = 'Password is required';
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!validateForm()) {
+      return;
+    }
+
     setIsLoading(true);
-    setError('');
 
     try {
-      await login(formData.email, formData.password);
-      router.push('/dashboard');
+      const result = await login(formData);
+      
+      // Check if 2FA is required
+      if (result?.requires2FA) {
+        setStep('2fa-verify');
+      } else if (result?.needs2FASetup) {
+        setStep('2fa-setup');
+      } else {
+        router.push('/dashboard');
+      }
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Invalid email or password');
+      const errorMessage = err.response?.data?.message || 'Login failed. Please try again.';
+      setErrors({ general: errorMessage });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleTwoFactorSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!twoFactorCode.trim()) {
+      setErrors({ twoFactor: 'Two-factor code is required' });
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      // Verify 2FA code
+      const response = await fetch('/api/auth/verify-2fa', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: formData.email,
+          code: twoFactorCode,
+        }),
+      });
+
+      if (response.ok) {
+        router.push('/dashboard');
+      } else {
+        const data = await response.json();
+        setErrors({ twoFactor: data.message || 'Invalid two-factor code' });
+      }
+    } catch (err: any) {
+      setErrors({ twoFactor: 'Verification failed. Please try again.' });
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value, type, checked } = e.target;
     setFormData(prev => ({
       ...prev,
-      [e.target.name]: e.target.value
+      [name]: type === 'checkbox' ? checked : value
     }));
+
+    // Clear error when user starts typing
+    if (errors[name]) {
+      setErrors(prev => ({ ...prev, [name]: '' }));
+    }
   };
+
+  const handle2FASetupComplete = () => {
+    router.push('/dashboard');
+  };
+
+  if (step === '2fa-setup') {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+        <TwoFactorSetup 
+          onComplete={handle2FASetupComplete}
+          isRequired={false}
+        />
+      </div>
+    );
+  }
+
+  if (step === '2fa-verify') {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-md w-full space-y-8">
+          <div className="text-center">
+            <h2 className="mt-6 text-3xl font-extrabold text-gray-900">
+              Two-Factor Authentication
+            </h2>
+            <p className="mt-2 text-sm text-gray-600">
+              Enter the verification code from your authenticator app or SMS
+            </p>
+          </div>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Verify Your Identity</CardTitle>
+              <CardDescription>
+                We've sent a verification code to your registered device
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleTwoFactorSubmit} className="space-y-6">
+                {errors.general && (
+                  <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-md text-sm">
+                    {errors.general}
+                  </div>
+                )}
+
+                {errors.twoFactor && (
+                  <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-md text-sm">
+                    {errors.twoFactor}
+                  </div>
+                )}
+
+                <Input
+                  label="Verification Code"
+                  type="text"
+                  name="twoFactorCode"
+                  value={twoFactorCode}
+                  onChange={(e) => setTwoFactorCode(e.target.value)}
+                  error={errors.twoFactor}
+                  required
+                  placeholder="Enter 6-digit code"
+                  maxLength={6}
+                  className="text-center text-2xl tracking-widest"
+                />
+
+                <Button
+                  type="submit"
+                  className="w-full"
+                  isLoading={isLoading}
+                  disabled={isLoading}
+                >
+                  Verify Code
+                </Button>
+
+                <div className="text-center">
+                  <button
+                    type="button"
+                    onClick={() => setStep('login')}
+                    className="text-sm text-green-600 hover:text-green-500"
+                  >
+                    Back to login
+                  </button>
+                </div>
+              </form>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
@@ -66,16 +230,16 @@ export default function LoginPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Welcome back to Xillix</CardTitle>
+            <CardTitle>Welcome back</CardTitle>
             <CardDescription>
-              Enter your credentials to access your account
+              Sign in to access your Xillix account
             </CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
-              {error && (
+              {errors.general && (
                 <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-md text-sm">
-                  {error}
+                  {errors.general}
                 </div>
               )}
 
@@ -85,8 +249,9 @@ export default function LoginPage() {
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
+                error={errors.email}
                 required
-                placeholder="Enter your email"
+                placeholder="john@example.com"
               />
 
               <div className="relative">
@@ -96,6 +261,7 @@ export default function LoginPage() {
                   name="password"
                   value={formData.password}
                   onChange={handleChange}
+                  error={errors.password}
                   required
                   placeholder="Enter your password"
                 />
@@ -115,12 +281,14 @@ export default function LoginPage() {
               <div className="flex items-center justify-between">
                 <div className="flex items-center">
                   <input
-                    id="remember-me"
-                    name="remember-me"
+                    id="rememberMe"
+                    name="rememberMe"
                     type="checkbox"
+                    checked={formData.rememberMe}
+                    onChange={handleChange}
                     className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
                   />
-                  <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900">
+                  <label htmlFor="rememberMe" className="ml-2 block text-sm text-gray-900">
                     Remember me
                   </label>
                 </div>

@@ -125,6 +125,20 @@ export default function MyPropertiesPage() {
     return <Badge className={config.className}>{config.label}</Badge>
   }
 
+  const handleDeleteProperty = async (propertyId: string) => {
+    if (!confirm('Are you sure you want to delete this property? This action cannot be undone.')) {
+      return
+    }
+
+    try {
+      await propertyApi.deleteProperty(propertyId)
+      setProperties(prev => prev.filter(p => p.id !== propertyId))
+    } catch (error) {
+      console.error('Error deleting property:', error)
+      alert('Failed to delete property. Please try again.')
+    }
+  }
+
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-KE', {
       style: 'currency',
@@ -304,6 +318,11 @@ export default function MyPropertiesPage() {
                             <MapPin className="h-4 w-4 mr-1" />
                             {property.location}
                           </div>
+                          <div className="flex items-center space-x-4 text-sm text-gray-500 mb-2">
+                            <span>{property.bedrooms} beds</span>
+                            <span>{property.bathrooms} baths</span>
+                            <span>{property.area} m²</span>
+                          </div>
                           <div className="flex items-center text-green-600 font-semibold text-lg">
                             <DollarSign className="h-4 w-4 mr-1" />
                             {formatCurrency(property.price)}
@@ -317,11 +336,18 @@ export default function MyPropertiesPage() {
                               View
                             </Button>
                           </Link>
-                          <Button variant="outline" size="sm">
-                            <Edit className="h-4 w-4 mr-1" />
-                            Edit
-                          </Button>
-                          <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700">
+                          <Link href={`/properties/edit/${property.id}`}>
+                            <Button variant="outline" size="sm">
+                              <Edit className="h-4 w-4 mr-1" />
+                              Edit
+                            </Button>
+                          </Link>
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="text-red-600 hover:text-red-700"
+                            onClick={() => handleDeleteProperty(property.id)}
+                          >
                             <Trash2 className="h-4 w-4" />
                           </Button>
                         </div>

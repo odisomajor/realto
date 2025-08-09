@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { useState, useEffect } from 'react';
+import { useRouter, useParams } from 'next/navigation';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import { useAuth } from '@/lib/auth';
 import { Button } from '@/components/ui/Button';
@@ -10,6 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { propertyApi } from '@/lib/api';
 import LocationPicker from '@/components/maps/LocationPicker';
 import { PlusIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { Property } from '@/types';
 
 interface PropertyFormData {
   title: string;
@@ -30,19 +31,22 @@ interface PropertyFormData {
   images: string[];
 }
 
-export default function NewPropertyPage() {
+export default function EditPropertyPage() {
   return (
     <ProtectedRoute requiredRole="AGENT">
-      <PropertySubmissionForm />
+      <PropertyEditForm />
     </ProtectedRoute>
   );
 }
 
-function PropertySubmissionForm() {
+function PropertyEditForm() {
   const router = useRouter();
+  const params = useParams();
   const { user } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingProperty, setIsLoadingProperty] = useState(true);
   const [error, setError] = useState('');
+  const [property, setProperty] = useState<Property | null>(null);
   const [formData, setFormData] = useState<PropertyFormData>({
     title: '',
     description: '',
@@ -60,7 +64,49 @@ function PropertySubmissionForm() {
   });
 
   const [newFeature, setNewFeature] = useState('');
-  const [newImage, setNewImage] = useState('');
+  const [imageFiles, setImageFiles] = useState<File[]>([]);
+  const [imagePreviewUrls, setImagePreviewUrls] = useState<string[]>([]);
+  const [uploadingImages, setUploadingImages] = useState(false);
+
+  useEffect(() => {
+    fetchProperty();
+  }, [params.id]);
+
+  const fetchProperty = async () => {
+    try {
+      setIsLoadingProperty(true);
+      const response = await propertyApi.getProperty(params.id as string);
+      const propertyData = response.data;
+      
+      // Check if user owns this property
+      if (propertyData.agentId !== user?.id) {
+        router.push('/properties/my-properties?error=Unauthorized');
+        return;
+      }
+
+      setProperty(propertyData);
+      setFormData({
+        title: propertyData.title,
+        description: propertyData.description,
+        price: propertyData.price.toString(),
+        location: propertyData.location,
+        county: propertyData.county || '',
+        coordinates: propertyData.coordinates,
+        bedrooms: propertyData.bedrooms.toString(),
+        bathrooms: propertyData.bathrooms.toString(),
+        area: propertyData.area.toString(),
+        type: propertyData.type,
+        category: propertyData.category,
+        features: propertyData.features || [],
+        images: propertyData.images || []
+      });
+    } catch (err: any) {
+      setError('Failed to load property details');
+      console.error('Error fetching property:', err);
+    } finally {
+      setIsLoadingProperty(false);
+    }
+  };
 
   const handleLocationSelect = (location: { lat: number; lng: number; address: string }) => {
     setFormData(prev => ({
@@ -95,10 +141,6 @@ function PropertySubmissionForm() {
     }));
   };
 
-  const [imageFiles, setImageFiles] = useState<File[]>([]);
-  const [imagePreviewUrls, setImagePreviewUrls] = useState<string[]>([]);
-  const [uploadingImages, setUploadingImages] = useState(false);
-
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     if (files.length === 0) return;
@@ -121,12 +163,19 @@ function PropertySubmissionForm() {
     setImagePreviewUrls(prev => [...prev, ...newPreviewUrls]);
   };
 
-  const removeImage = (index: number) => {
+  const removeNewImage = (index: number) => {
     // Revoke the object URL to prevent memory leaks
     URL.revokeObjectURL(imagePreviewUrls[index]);
     
     setImageFiles(prev => prev.filter((_, i) => i !== index));
     setImagePreviewUrls(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const removeExistingImage = (imageUrl: string) => {
+    setFormData(prev => ({
+      ...prev,
+      images: prev.images.filter(img => img !== imageUrl)
+    }));
   };
 
   const uploadImages = async (): Promise<string[]> => {
@@ -162,7 +211,7 @@ function PropertySubmissionForm() {
     setError('');
 
     try {
-      // Upload images first
+      // Upload new images first
       const uploadedImageUrls = await uploadImages();
 
       const propertyData = {
@@ -171,18 +220,17 @@ function PropertySubmissionForm() {
         bedrooms: parseInt(formData.bedrooms) || 0,
         bathrooms: parseInt(formData.bathrooms) || 0,
         area: parseFloat(formData.area),
-        images: uploadedImageUrls,
-        agentId: user?.id
+        images: [...formData.images, ...uploadedImageUrls],
       };
 
-      const response = await propertyApi.createProperty(propertyData);
+      await propertyApi.updateProperty(params.id as string, propertyData);
       
       // Clean up preview URLs
       imagePreviewUrls.forEach(url => URL.revokeObjectURL(url));
       
-      router.push(`/properties/${response.data.id}?success=Property created successfully`);
+      router.push(`/properties/${params.id}?success=Property updated successfully`);
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to create property. Please try again.');
+      setError(err.response?.data?.message || 'Failed to update property. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -198,19 +246,43 @@ function PropertySubmissionForm() {
     'Trans Nzoia', 'Turkana', 'Uasin Gishu', 'Vihiga', 'Wajir', 'West Pokot'
   ];
 
+  if (isLoadingProperty) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading property details...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!property) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-600 mb-4">Property not found</p>
+          <Button onClick={() => router.push('/properties/my-properties')}>
+            Back to My Properties
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Add New Property</h1>
-          <p className="text-gray-600 mt-2">Create a new property listing for your clients</p>
+          <h1 className="text-3xl font-bold text-gray-900">Edit Property</h1>
+          <p className="text-gray-600 mt-2">Update your property listing details</p>
         </div>
 
         <Card>
           <CardHeader>
             <CardTitle>Property Details</CardTitle>
             <CardDescription>
-              Fill in the information below to create a new property listing
+              Update the information below to modify your property listing
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -261,7 +333,7 @@ function PropertySubmissionForm() {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Property Type
+                    Listing Type
                   </label>
                   <select
                     name="type"
@@ -404,10 +476,42 @@ function PropertySubmissionForm() {
                 </div>
               </div>
 
-              {/* Images */}
+              {/* Existing Images */}
+              {formData.images.length > 0 && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Current Images
+                  </label>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                    {formData.images.map((image, index) => (
+                      <div key={index} className="relative group">
+                        <img
+                          src={image}
+                          alt={`Property ${index + 1}`}
+                          className="w-full h-24 object-cover rounded-md border"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => removeExistingImage(image)}
+                          className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <XMarkIcon className="h-4 w-4" />
+                        </button>
+                        {index === 0 && (
+                          <div className="absolute bottom-1 left-1 bg-green-500 text-white text-xs px-2 py-1 rounded">
+                            Main
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* New Images */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Property Images
+                  Add New Images
                 </label>
                 <div className="mb-4">
                   <input
@@ -418,7 +522,7 @@ function PropertySubmissionForm() {
                     className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100"
                   />
                   <p className="text-sm text-gray-500 mt-1">
-                    Upload up to 10 images. Max 5MB per image. Supported formats: JPG, PNG, WebP
+                    Upload additional images. Max 5MB per image. Supported formats: JPG, PNG, WebP
                   </p>
                 </div>
                 
@@ -428,21 +532,19 @@ function PropertySubmissionForm() {
                       <div key={index} className="relative group">
                         <img
                           src={url}
-                          alt={`Property ${index + 1}`}
+                          alt={`New image ${index + 1}`}
                           className="w-full h-24 object-cover rounded-md border"
                         />
                         <button
                           type="button"
-                          onClick={() => removeImage(index)}
+                          onClick={() => removeNewImage(index)}
                           className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 opacity-0 group-hover:opacity-100 transition-opacity"
                         >
                           <XMarkIcon className="h-4 w-4" />
                         </button>
-                        {index === 0 && (
-                          <div className="absolute bottom-1 left-1 bg-green-500 text-white text-xs px-2 py-1 rounded">
-                            Main
-                          </div>
-                        )}
+                        <div className="absolute bottom-1 left-1 bg-blue-500 text-white text-xs px-2 py-1 rounded">
+                          New
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -469,9 +571,9 @@ function PropertySubmissionForm() {
                 <Button
                   type="submit"
                   isLoading={isLoading || uploadingImages}
-                  disabled={isLoading || uploadingImages || imageFiles.length === 0}
+                  disabled={isLoading || uploadingImages}
                 >
-                  {uploadingImages ? 'Uploading Images...' : isLoading ? 'Creating Property...' : 'Create Property'}
+                  {uploadingImages ? 'Uploading Images...' : isLoading ? 'Updating Property...' : 'Update Property'}
                 </Button>
               </div>
             </form>

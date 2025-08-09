@@ -1,28 +1,29 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useParams } from 'next/navigation';
-import Image from 'next/image';
+import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/Button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
-import { Input } from '@/components/ui/Input';
+import { Card, CardContent } from '@/components/ui/Card';
+import { Badge } from '@/components/ui/badge';
 import { Property } from '@/types';
-import { formatPrice, formatArea } from '@/lib/utils';
 import { usePropertyViewTracker } from '@/components/auth/BrowsingTracker';
-import {
-  MapPinIcon,
-  HomeIcon,
-  BuildingOfficeIcon,
-  CalendarIcon,
-  PhoneIcon,
-  EnvelopeIcon,
-  HeartIcon,
-  ShareIcon,
-  ChevronLeftIcon,
-  ChevronRightIcon,
-} from '@heroicons/react/24/outline';
-import { HeartIcon as HeartSolidIcon } from '@heroicons/react/24/solid';
+import PropertyDetails from '@/components/properties/PropertyDetails';
+import { 
+  ArrowLeft,
+  Share2,
+  Heart,
+  Flag,
+  Eye,
+  Clock,
+  TrendingUp,
+  MapPin,
+  ChevronRight,
+  ArrowRight,
+  Bed,
+  Bath,
+  Square
+} from 'lucide-react';
 
 // Mock property data - replace with API call
 const mockProperty: Property = {
@@ -31,6 +32,10 @@ const mockProperty: Property = {
   description: "This luxurious apartment offers stunning city views and modern amenities in the heart of Westlands. Perfect for professionals and families looking for convenience and style.",
   price: 15000000,
   location: "Westlands, Nairobi",
+  coordinates: {
+    lat: -1.2634,
+    lng: 36.8078
+  },
   bedrooms: 3,
   bathrooms: 2,
   area: 120, // 120 square metres
@@ -66,73 +71,159 @@ const mockProperty: Property = {
 
 export default function PropertyDetailPage() {
   const params = useParams();
+  const router = useRouter();
   const [property, setProperty] = useState<Property | null>(null);
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [isLiked, setIsLiked] = useState(false);
-  const [contactForm, setContactForm] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    message: '',
-  });
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [relatedProperties, setRelatedProperties] = useState<Property[]>([]);
 
   // Track property view for browsing session
   usePropertyViewTracker(params.id as string);
 
   useEffect(() => {
-    // TODO: Fetch property by ID from API
-    setProperty(mockProperty);
-  }, [params.id]);
-
-  const handleContactSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-
-    try {
-      // TODO: Submit contact form to API
-      console.log('Contact form submitted:', contactForm);
+    const fetchProperty = async () => {
+      setLoading(true);
+      
+      // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      // Reset form
-      setContactForm({ name: '', email: '', phone: '', message: '' });
-      alert('Message sent successfully!');
-    } catch (error) {
-      alert('Failed to send message. Please try again.');
-    } finally {
-      setIsSubmitting(false);
+      // Enhanced mock property data
+      const enhancedProperty: Property = {
+        ...mockProperty,
+        id: params.id as string,
+        description: "This luxurious apartment offers stunning city views and modern amenities in the heart of Westlands. Perfect for professionals and families looking for convenience and style. The property features spacious living areas, modern kitchen with premium appliances, master bedroom with en-suite bathroom, and a beautiful balcony overlooking the city. Located in a secure building with 24/7 security, swimming pool, gym, and covered parking.",
+        features: [
+          "swimming pool",
+          "gym", 
+          "parking",
+          "security",
+          "elevator",
+          "balcony",
+          "modern kitchen",
+          "air conditioning",
+          "wifi",
+          "electricity",
+          "water",
+          "furnished"
+        ]
+      };
+
+      // Mock related properties
+      const mockRelatedProperties: Property[] = [
+        {
+          id: 'related-1',
+          title: "Luxury 2-Bedroom Apartment in Kilimani",
+          description: "Beautiful modern apartment with city views",
+          price: 12000000,
+          location: "Kilimani, Nairobi",
+          bedrooms: 2,
+          bathrooms: 2,
+          area: 95,
+          type: 'sale',
+          category: 'residential',
+          status: 'available',
+          images: ["https://picsum.photos/400/300?random=40"],
+          features: ['parking', 'security', 'wifi'],
+          agent: {
+            id: 'agent-2',
+            name: 'Jane Smith',
+            email: 'jane@example.com',
+            phone: '+254700111222'
+          },
+          createdAt: '2024-01-10T10:00:00Z',
+          updatedAt: '2024-01-15T15:30:00Z'
+        },
+        {
+          id: 'related-2',
+          title: "Spacious 4-Bedroom House in Karen",
+          description: "Family home in quiet neighborhood",
+          price: 35000000,
+          location: "Karen, Nairobi",
+          bedrooms: 4,
+          bathrooms: 3,
+          area: 250,
+          type: 'sale',
+          category: 'residential',
+          status: 'available',
+          images: ["https://picsum.photos/400/300?random=41"],
+          features: ['garden', 'parking', 'security'],
+          agent: {
+            id: 'agent-3',
+            name: 'Michael Johnson',
+            email: 'michael@example.com',
+            phone: '+254700333444'
+          },
+          createdAt: '2024-01-05T10:00:00Z',
+          updatedAt: '2024-01-10T15:30:00Z'
+        }
+      ];
+
+      setProperty(enhancedProperty);
+      setRelatedProperties(mockRelatedProperties);
+      setLoading(false);
+    };
+
+    fetchProperty();
+  }, [params.id]);
+
+  const handleContactAgent = (message: string) => {
+    console.log('Contacting agent with message:', message);
+    // Implement contact agent functionality
+  };
+
+  const handleScheduleTour = (date: string, time: string, type: 'virtual' | 'physical') => {
+    console.log('Scheduling tour:', { date, time, type });
+    // Implement tour scheduling functionality
+  };
+
+  const handleSaveProperty = (propertyId: string) => {
+    console.log('Saving property:', propertyId);
+    // Implement save property functionality
+  };
+
+  const handleShareProperty = (propertyId: string) => {
+    console.log('Sharing property:', propertyId);
+    // Implement share property functionality
+    if (navigator.share) {
+      navigator.share({
+        title: property?.title,
+        text: property?.description,
+        url: window.location.href,
+      });
+    } else {
+      // Fallback to copying URL to clipboard
+      navigator.clipboard.writeText(window.location.href);
     }
   };
 
-  const handleContactChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setContactForm(prev => ({
-      ...prev,
-      [e.target.name]: e.target.value
-    }));
+  const formatPrice = (price: number) => {
+    return new Intl.NumberFormat('en-KE', {
+      style: 'currency',
+      currency: 'KES',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(price);
   };
 
-  const nextImage = () => {
-    if (property) {
-      setCurrentImageIndex((prev) => 
-        prev === property.images.length - 1 ? 0 : prev + 1
-      );
-    }
-  };
-
-  const prevImage = () => {
-    if (property) {
-      setCurrentImageIndex((prev) => 
-        prev === 0 ? property.images.length - 1 : prev - 1
-      );
-    }
-  };
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading property details...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!property) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-green-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading property details...</p>
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">Property Not Found</h1>
+          <p className="text-gray-600 mb-6">The property you're looking for doesn't exist.</p>
+          <Button onClick={() => router.push('/properties')}>
+            Back to Properties
+          </Button>
         </div>
       </div>
     );
@@ -140,288 +231,103 @@ export default function PropertyDetailPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Breadcrumb */}
-      <div className="bg-white border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <nav className="flex items-center space-x-2 text-sm text-gray-600">
-            <Link href="/" className="hover:text-green-600">Home</Link>
-            <span>/</span>
-            <Link href="/properties" className="hover:text-green-600">Properties</Link>
-            <span>/</span>
-            <span className="text-gray-900">{property.title}</span>
-          </nav>
-        </div>
-      </div>
-
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Main Content */}
-          <div className="lg:col-span-2">
-            {/* Image Gallery */}
-            <div className="relative mb-8">
-              <div className="relative h-96 md:h-[500px] rounded-lg overflow-hidden">
-                <Image
-                  src={property.images[currentImageIndex]}
-                  alt={property.title}
-                  fill
-                  className="object-cover"
-                />
-                
-                {/* Navigation Arrows */}
-                {property.images.length > 1 && (
-                  <>
-                    <button
-                      onClick={prevImage}
-                      className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-full hover:bg-opacity-70 transition-opacity"
-                    >
-                      <ChevronLeftIcon className="w-6 h-6" />
-                    </button>
-                    <button
-                      onClick={nextImage}
-                      className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-full hover:bg-opacity-70 transition-opacity"
-                    >
-                      <ChevronRightIcon className="w-6 h-6" />
-                    </button>
-                  </>
-                )}
+        {/* Breadcrumb */}
+        <nav className="flex items-center space-x-2 text-sm text-gray-600 mb-6">
+          <button 
+            onClick={() => router.push('/properties')}
+            className="hover:text-blue-600 transition-colors"
+          >
+            Properties
+          </button>
+          <ChevronRight className="h-4 w-4" />
+          <span className="text-gray-900">{property.title}</span>
+        </nav>
 
-                {/* Image Counter */}
-                <div className="absolute bottom-4 right-4 bg-black bg-opacity-50 text-white px-3 py-1 rounded-full text-sm">
-                  {currentImageIndex + 1} / {property.images.length}
-                </div>
-              </div>
+        {/* Property Details Component */}
+        <PropertyDetails
+          property={property}
+          onContactAgent={handleContactAgent}
+          onScheduleTour={handleScheduleTour}
+          onSaveProperty={handleSaveProperty}
+          onShareProperty={handleShareProperty}
+        />
 
-              {/* Thumbnail Gallery */}
-              {property.images.length > 1 && (
-                <div className="flex space-x-2 mt-4 overflow-x-auto">
-                  {property.images.map((image, index) => (
-                    <button
-                      key={index}
-                      onClick={() => setCurrentImageIndex(index)}
-                      className={`relative w-20 h-20 rounded-lg overflow-hidden flex-shrink-0 ${
-                        index === currentImageIndex ? 'ring-2 ring-green-600' : ''
+        {/* Related Properties Section */}
+        {relatedProperties.length > 0 && (
+          <div className="mt-12">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold text-gray-900">Similar Properties</h2>
+              <Button 
+                variant="outline"
+                onClick={() => router.push('/properties')}
+                className="flex items-center space-x-2"
+              >
+                <span>View All Properties</span>
+                <ArrowRight className="h-4 w-4" />
+              </Button>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {relatedProperties.map((relatedProperty) => (
+                <Card 
+                  key={relatedProperty.id} 
+                  className="cursor-pointer hover:shadow-lg transition-shadow"
+                  onClick={() => router.push(`/properties/${relatedProperty.id}`)}
+                >
+                  <div className="relative">
+                    <img
+                      src={relatedProperty.images[0]}
+                      alt={relatedProperty.title}
+                      className="w-full h-48 object-cover rounded-t-lg"
+                    />
+                    <Badge 
+                      className={`absolute top-2 right-2 ${
+                        relatedProperty.status === 'available' 
+                          ? 'bg-green-500' 
+                          : relatedProperty.status === 'sold' 
+                          ? 'bg-red-500' 
+                          : 'bg-yellow-500'
                       }`}
                     >
-                      <Image
-                        src={image}
-                        alt={`${property.title} ${index + 1}`}
-                        fill
-                        className="object-cover"
-                      />
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Property Details */}
-            <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
-              <div className="flex items-start justify-between mb-6">
-                <div>
-                  <h1 className="text-3xl font-bold text-gray-900 mb-2">{property.title}</h1>
-                  <div className="flex items-center text-gray-600 mb-4">
-                    <MapPinIcon className="w-5 h-5 mr-2" />
-                    <span>{property.location}</span>
+                      {relatedProperty.status}
+                    </Badge>
                   </div>
-                  <div className="flex items-center text-gray-600">
-                    <HomeIcon className="h-5 w-5 mr-2" />
-                    <span>
-                      {property.bedrooms > 0 && `${property.bedrooms} bed`}
-                      {property.bedrooms > 0 && property.bathrooms > 0 && ' • '}
-                      {property.bathrooms > 0 && `${property.bathrooms} bath`}
-                      {(property.bedrooms > 0 || property.bathrooms > 0) && ' • '}
-                      {formatArea(property.area, property.category)}
-                    </span>
-                  </div>
-                  <div className="text-3xl font-bold text-green-600">
-                    {formatPrice(property.price)}
-                    {property.status === 'for_rent' && <span className="text-lg text-gray-600">/month</span>}
-                  </div>
-                </div>
-                
-                <div className="flex items-center space-x-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setIsLiked(!isLiked)}
-                    className="flex items-center space-x-2"
-                  >
-                    {isLiked ? (
-                      <HeartSolidIcon className="w-5 h-5 text-red-500" />
-                    ) : (
-                      <HeartIcon className="w-5 h-5" />
-                    )}
-                    <span>Save</span>
-                  </Button>
-                  <Button variant="outline" size="sm" className="flex items-center space-x-2">
-                    <ShareIcon className="w-5 h-5" />
-                    <span>Share</span>
-                  </Button>
-                </div>
-              </div>
-
-              {/* Property Stats */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6 p-4 bg-gray-50 rounded-lg">
-                <div className="text-center">
-                  <HomeIcon className="w-6 h-6 text-gray-600 mx-auto mb-2" />
-                  <div className="text-sm text-gray-600">Bedrooms</div>
-                  <div className="font-semibold">{property.bedrooms}</div>
-                </div>
-                <div className="text-center">
-                  <BuildingOfficeIcon className="w-6 h-6 text-gray-600 mx-auto mb-2" />
-                  <div className="text-sm text-gray-600">Bathrooms</div>
-                  <div className="font-semibold">{property.bathrooms}</div>
-                </div>
-                <div className="text-center">
-                  <div className="w-6 h-6 text-gray-600 mx-auto mb-2 flex items-center justify-center">
-                    <span className="text-lg">📐</span>
-                  </div>
-                  <div className="text-sm text-gray-600">Area</div>
-                  <div className="font-semibold">{property.area} m²</div>
-                </div>
-                <div className="text-center">
-                  <div className="w-6 h-6 text-gray-600 mx-auto mb-2 flex items-center justify-center">
-                    <span className="text-lg">🏠</span>
-                  </div>
-                  <div className="text-sm text-gray-600">Type</div>
-                  <div className="font-semibold capitalize">{property.type}</div>
-                </div>
-              </div>
-
-              {/* Features */}
-              <div className="mb-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-3">Features</h3>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                  {property.features.map((feature, index) => (
-                    <div key={index} className="flex items-center space-x-2 text-gray-700">
-                      <div className="w-2 h-2 bg-green-600 rounded-full"></div>
-                      <span>{feature}</span>
+                  
+                  <div className="p-4">
+                    <h3 className="font-semibold text-lg text-gray-900 mb-2 line-clamp-2">
+                      {relatedProperty.title}
+                    </h3>
+                    <p className="text-2xl font-bold text-blue-600 mb-2">
+                      {formatPrice(relatedProperty.price)}
+                    </p>
+                    <p className="text-gray-600 mb-3 flex items-center">
+                      <MapPin className="h-4 w-4 mr-1" />
+                      {relatedProperty.location}
+                    </p>
+                    
+                    <div className="flex items-center justify-between text-sm text-gray-500">
+                      <div className="flex items-center space-x-4">
+                        <span className="flex items-center">
+                          <Bed className="h-4 w-4 mr-1" />
+                          {relatedProperty.bedrooms}
+                        </span>
+                        <span className="flex items-center">
+                          <Bath className="h-4 w-4 mr-1" />
+                          {relatedProperty.bathrooms}
+                        </span>
+                        <span className="flex items-center">
+                          <Square className="h-4 w-4 mr-1" />
+                          {relatedProperty.area}m²
+                        </span>
+                      </div>
                     </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Description */}
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-3">Description</h3>
-                <div className="text-gray-700 leading-relaxed whitespace-pre-line">
-                  {property.description}
-                </div>
-              </div>
+                  </div>
+                </Card>
+              ))}
             </div>
           </div>
-
-          {/* Sidebar */}
-          <div className="lg:col-span-1">
-            {/* Contact Form */}
-            <Card className="mb-8">
-              <CardHeader>
-                <CardTitle>Contact Agent</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <form onSubmit={handleContactSubmit} className="space-y-4">
-                  <Input
-                    label="Name"
-                    type="text"
-                    name="name"
-                    value={contactForm.name}
-                    onChange={handleContactChange}
-                    required
-                    placeholder="Your full name"
-                  />
-                  <Input
-                    label="Email"
-                    type="email"
-                    name="email"
-                    value={contactForm.email}
-                    onChange={handleContactChange}
-                    required
-                    placeholder="your@email.com"
-                  />
-                  <Input
-                    label="Phone"
-                    type="tel"
-                    name="phone"
-                    value={contactForm.phone}
-                    onChange={handleContactChange}
-                    required
-                    placeholder="+254 700 000 000"
-                  />
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Message
-                    </label>
-                    <textarea
-                      name="message"
-                      value={contactForm.message}
-                      onChange={handleContactChange}
-                      rows={4}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500"
-                      placeholder="I'm interested in this property..."
-                      required
-                    />
-                  </div>
-                  <Button
-                    type="submit"
-                    className="w-full"
-                    isLoading={isSubmitting}
-                    disabled={isSubmitting}
-                  >
-                    Send Message
-                  </Button>
-                </form>
-
-                <div className="mt-6 pt-6 border-t border-gray-200">
-                  <div className="flex items-center space-x-3 mb-3">
-                    <PhoneIcon className="w-5 h-5 text-gray-600" />
-                    <span className="text-gray-900">+254 700 123 456</span>
-                  </div>
-                  <div className="flex items-center space-x-3">
-                    <EnvelopeIcon className="w-5 h-5 text-gray-600" />
-                    <span className="text-gray-900">agent@xillix.com</span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Property Status */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Property Information</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Status</span>
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                    property.status === 'for_sale' 
-                      ? 'bg-green-100 text-green-800'
-                      : property.status === 'for_rent'
-                      ? 'bg-green-100 text-green-800'
-                      : 'bg-gray-100 text-gray-800'
-                  }`}>
-                    {property.status.replace('_', ' ').toUpperCase()}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Property ID</span>
-                  <span className="font-medium">#{property.id}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Listed</span>
-                  <span className="font-medium">
-                    {new Date(property.createdAt).toLocaleDateString()}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Updated</span>
-                  <span className="font-medium">
-                    {new Date(property.updatedAt).toLocaleDateString()}
-                  </span>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
+        )}
       </div>
     </div>
   );

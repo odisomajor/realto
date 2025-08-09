@@ -23,6 +23,7 @@ model User {
   
   // 2FA Fields
   twoFactorEnabled Boolean @default(false)
+  twoFactorMethod  String? // totp, sms
   twoFactorSecret  String?
   backupCodes      String? // JSON array as string
   
@@ -49,6 +50,8 @@ model User {
   refreshTokens RefreshToken[]
   securityEvents SecurityEvent[]
   browsingSessions BrowsingSession[]
+  emailVerificationTokens EmailVerificationToken[]
+  passwordResetTokens PasswordResetToken[]
   
   // Timestamps
   createdAt     DateTime @default(now())
@@ -225,4 +228,28 @@ model BrowsingSession {
   expiresAt         DateTime // Session expiration
   
   @@map("browsing_sessions")
+}
+
+// Email Verification Token
+model EmailVerificationToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  
+  @@map("email_verification_tokens")
+}
+
+// Password Reset Token
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  
+  @@map("password_reset_tokens")
 }

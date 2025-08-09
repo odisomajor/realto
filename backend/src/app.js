@@ -14,6 +14,7 @@ const inquiryRoutes = require('./routes/inquiries');
 const favoriteRoutes = require('./routes/favorites');
 const browsingSessionRoutes = require('./routes/browsingSession');
 const userRoutes = require('./routes/users.js');
+const geocodingRoutes = require('./routes/geocoding');
 
 // Middleware
 app.use(cors());
@@ -33,6 +34,7 @@ app.use('/api/inquiries', inquiryRoutes);
 app.use('/api/favorites', favoriteRoutes);
 app.use('/api/browsing-session', browsingSessionRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/geocoding', geocodingRoutes);
 
 // Basic route
 app.get('/', (req, res) => {
@@ -45,7 +47,8 @@ app.get('/', (req, res) => {
       inquiries: '/api/inquiries',
       favorites: '/api/favorites',
       browsingSession: '/api/browsing-session',
-      users: '/api/users'
+      users: '/api/users',
+      geocoding: '/api/geocoding'
     }
   });
 });

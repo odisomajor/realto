@@ -626,10 +626,93 @@ router.delete('/sessions/:sessionId', [
  *       401:
  *         description: Authentication required
  */
-router.post('/2fa/enable', [
+router.post('/2fa/setup', [
   authenticate,
-  rateLimitSensitive
-], authController.enableTwoFactor);
+  rateLimitSensitive,
+  body('method')
+    .isIn(['totp', 'sms'])
+    .withMessage('Method must be either totp or sms'),
+  validate
+], authController.setupTwoFactor);
+
+/**
+ * @swagger
+ * /api/auth/2fa/verify:
+ *   post:
+ *     summary: Verify two-factor authentication code
+ *     tags: [Authentication]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - method
+ *               - code
+ *             properties:
+ *               method:
+ *                 type: string
+ *                 enum: [totp, sms]
+ *               code:
+ *                 type: string
+ *               loginToken:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: 2FA verification successful
+ *       400:
+ *         description: Invalid code or method
+ */
+router.post('/2fa/verify', [
+  body('method')
+    .isIn(['totp', 'sms'])
+    .withMessage('Method must be either totp or sms'),
+  body('code')
+    .isLength({ min: 6, max: 6 })
+    .withMessage('Code must be 6 digits'),
+  validate
+], authController.verifyTwoFactor);
+
+/**
+ * @swagger
+ * /api/auth/2fa/verify-setup:
+ *   post:
+ *     summary: Verify two-factor authentication setup
+ *     tags: [Authentication]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - method
+ *               - code
+ *             properties:
+ *               method:
+ *                 type: string
+ *                 enum: [totp, sms]
+ *               code:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: 2FA setup verified successfully
+ *       400:
+ *         description: Invalid code or method
+ */
+router.post('/2fa/verify-setup', [
+  authenticate,
+  body('method')
+    .isIn(['totp', 'sms'])
+    .withMessage('Method must be either totp or sms'),
+  body('code')
+    .isLength({ min: 6, max: 6 })
+    .withMessage('Code must be 6 digits'),
+  validate
+], authController.verifyTwoFactorSetup);
 
 /**
  * @swagger
@@ -664,9 +747,6 @@ router.post('/2fa/enable', [
 router.post('/2fa/disable', [
   authenticate,
   rateLimitSensitive,
-  body('password')
-    .notEmpty()
-    .withMessage('Password is required'),
   body('code')
     .isLength({ min: 6, max: 6 })
     .withMessage('2FA code must be 6 digits'),
@@ -675,32 +755,21 @@ router.post('/2fa/disable', [
 
 /**
  * @swagger
- * /api/auth/2fa/verify:
+ * /api/auth/2fa/backup-codes:
  *   post:
- *     summary: Verify two-factor authentication code
+ *     summary: Generate backup codes for 2FA
  *     tags: [Authentication]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - code
- *             properties:
- *               code:
- *                 type: string
+ *     security:
+ *       - bearerAuth: []
  *     responses:
  *       200:
- *         description: 2FA code verified
- *       400:
- *         description: Invalid code
+ *         description: Backup codes generated successfully
+ *       401:
+ *         description: Authentication required
  */
-router.post('/2fa/verify', [
-  body('code')
-    .isLength({ min: 6, max: 6 })
-    .withMessage('2FA code must be 6 digits'),
-  validate
-], authController.verifyTwoFactor);
+router.post('/2fa/backup-codes', [
+  authenticate,
+  rateLimitSensitive
+], authController.generateBackupCodes);
 
 export default router;

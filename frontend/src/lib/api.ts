@@ -53,6 +53,16 @@ export const propertyApi = {
   getFavorites: () => api.get('/properties/favorites'),
 }
 
+// Geocoding API endpoints
+export const geocodingApi = {
+  geocodeAddress: (address: string) => api.post('/geocoding/geocode', { address }),
+  reverseGeocode: (lat: number, lng: number) => api.post('/geocoding/reverse', { lat, lng }),
+  findNearbyAmenities: (lat: number, lng: number, type: string, radius?: number) => 
+    api.post('/geocoding/nearby', { lat, lng, type, radius }),
+  calculateDistance: (lat1: number, lng1: number, lat2: number, lng2: number) => 
+    api.post('/geocoding/distance', { lat1, lng1, lat2, lng2 }),
+}
+
 // Auth API endpoints
 export const authApi = {
   login: (credentials: { email: string; password: string }) => 
@@ -63,6 +73,15 @@ export const authApi = {
   forgotPassword: (email: string) => api.post('/auth/forgot-password', { email }),
   resetPassword: (token: string, password: string) => 
     api.post('/auth/reset-password', { token, password }),
+  verifyEmail: (token: string) => api.post('/auth/verify-email', { token }),
+  resendVerification: (email: string) => api.post('/auth/resend-verification', { email }),
+  setupTwoFactor: (data: { method: 'totp' | 'sms' }) => api.post('/auth/2fa/setup', data),
+  verifyTwoFactor: (data: { method: 'totp' | 'sms'; code: string }) => 
+    api.post('/auth/2fa/verify', data),
+  disableTwoFactor: (code: string) => api.post('/auth/2fa/disable', { code }),
+  generateBackupCodes: () => api.post('/auth/2fa/backup-codes'),
+  changePassword: (data: { currentPassword: string; newPassword: string }) =>
+    api.post('/auth/change-password', data),
 }
 
 // User API endpoints
