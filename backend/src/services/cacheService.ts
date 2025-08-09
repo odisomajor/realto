@@ -45,7 +45,6 @@ export class CacheService {
       }
 
       this.redis = new Redis(redisUrl, {
-        retryDelayOnFailover: 100,
         maxRetriesPerRequest: 3,
         lazyConnect: true,
       });

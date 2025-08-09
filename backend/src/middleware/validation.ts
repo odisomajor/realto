@@ -364,3 +364,7 @@ export const asyncValidate = async (
     next(new AppError('Validation error', 500));
   }
 };
+
+// Export individual validation functions for convenience
+export const isValidUUID = customValidators.isUUID;
+export const isValidSlug = customValidators.isSlug;

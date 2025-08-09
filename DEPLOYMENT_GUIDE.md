@@ -1,238 +1,495 @@
-# Real Estate Platform v1.0 - Deployment Guide
+# Real Estate Platform - Deployment Guide to xillix.co.ke
 
-## 🚀 Quick Deployment Steps
+## Overview
 
-### 1. GitHub Repository Setup
+This guide provides step-by-step instructions for deploying the Real Estate
+Platform to your `xillix.co.ke` domain using both automated and manual
+deployment methods.
 
-If you haven't set up a GitHub repository yet:
+## Prerequisites
 
-```bash
-# Create a new repository on GitHub first, then:
-git remote add origin https://github.com/yourusername/real-estate-platform.git
-git branch -M main
-git push -u origin main
-git push origin v1.0
+### Server Requirements
+
+- Ubuntu 20.04+ or Debian 11+ server
+- Minimum 2GB RAM, 2 CPU cores
+- 20GB+ available disk space
+- Root or sudo access
+- Domain name pointing to your server IP
+
+### DNS Configuration
+
+Ensure your domain `xillix.co.ke` has the following DNS records:
+
+```
+A     xillix.co.ke        → YOUR_SERVER_IP
+A     www.xillix.co.ke    → YOUR_SERVER_IP
 ```
 
-### 2. Production Environment Setup
+## Option 1: Automated Deployment (Recommended)
 
-#### Prerequisites
-- Node.js 18+ 
-- PostgreSQL 14+
-- Redis (optional, for caching)
-- Domain name and SSL certificate
+### Step 1: Connect to Your Server
 
-#### Environment Configuration
-
-1. Copy the production environment template:
 ```bash
-cp .env.production .env
+ssh root@YOUR_SERVER_IP
+# or
+ssh your-username@YOUR_SERVER_IP
+sudo su -
 ```
 
-2. Update `.env` with your production values:
-   - Database connection string
-   - JWT secret (generate a secure one)
-   - SMTP settings for email notifications
-   - Domain and CORS settings
-
-### 3. Database Setup
+### Step 2: Download and Run Deployment Script
 
 ```bash
+# Download the deployment script
+curl -O https://raw.githubusercontent.com/odisomajor/realto/main/scripts/deploy-to-domain.sh
+
+# Make it executable
+chmod +x deploy-to-domain.sh
+
+# Run the deployment
+./deploy-to-domain.sh xillix.co.ke
+```
+
+### What the Script Does
+
+The automated script will:
+
+1. **System Setup**: Update packages, install Node.js 18, PostgreSQL, Nginx,
+   PM2, Git
+2. **Application Setup**: Clone repository, install dependencies, build
+   applications
+3. **Database Configuration**: Create PostgreSQL database and user
+4. **Environment Configuration**: Set up production environment variables
+5. **Web Server Configuration**: Configure Nginx with SSL-ready setup
+6. **Process Management**: Start applications using PM2
+7. **SSL Certificate**: Install Let's Encrypt SSL certificate (if DNS is
+   configured)
+8. **Security**: Configure UFW firewall
+
+### Expected Output
+
+```
+🚀 Starting Real Estate Platform deployment for xillix.co.ke
+✅ System updated
+✅ Node.js installed: v18.x.x
+✅ PostgreSQL installed
+✅ Nginx installed
+✅ PM2 installed
+✅ Git installed
+✅ Repository cloned
+✅ Dependencies installed
+✅ Database configured
+✅ Environment configured
+✅ Applications built
+✅ Nginx configured
+✅ Applications started
+✅ SSL certificate installed
+✅ Firewall configured
+```
+
+## Option 2: Manual Deployment
+
+### Step 1: System Preparation
+
+```bash
+# Update system
+sudo apt update && sudo apt upgrade -y
+
+# Install Node.js 18
+curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+sudo apt-get install -y nodejs
+
+# Install PostgreSQL
+sudo apt install postgresql postgresql-contrib -y
+sudo systemctl start postgresql
+sudo systemctl enable postgresql
+
+# Install Nginx
+sudo apt install nginx -y
+sudo systemctl start nginx
+sudo systemctl enable nginx
+
+# Install PM2
+sudo npm install -g pm2
+
+# Install Git
+sudo apt install git -y
+```
+
+### Step 2: Clone and Setup Application
+
+```bash
+# Create project directory
+sudo mkdir -p /var/www/realto
+cd /var/www/realto
+
+# Clone repository
+sudo git clone https://github.com/odisomajor/realto.git .
+
 # Install dependencies
-npm install
-
-# Setup database
-cd backend
-npm install
-npx prisma generate
-npx prisma migrate deploy
-npm run seed
+sudo npm install
+cd backend && sudo npm install
+cd ../frontend && sudo npm install
+cd ..
 ```
 
-### 4. Build Applications
+### Step 3: Database Setup
+
+```bash
+# Switch to postgres user and create database
+sudo -u postgres psql -c "CREATE DATABASE realestate_prod;"
+sudo -u postgres psql -c "CREATE USER realestate WITH ENCRYPTED PASSWORD 'realto2024secure';"
+sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE realestate_prod TO realestate;"
+```
+
+### Step 4: Environment Configuration
+
+```bash
+# Create production environment file
+sudo tee .env << EOF
+DATABASE_URL="postgresql://realestate:realto2024secure@localhost:5432/realestate_prod"
+JWT_SECRET="$(openssl rand -base64 32)"
+NODE_ENV="production"
+PORT=5000
+FRONTEND_URL="https://xillix.co.ke"
+CORS_ORIGIN="https://xillix.co.ke"
+UPLOAD_DIR="./uploads"
+MAX_FILE_SIZE=10485760
+REDIS_URL="redis://localhost:6379"
+EMAIL_FROM="noreply@xillix.co.ke"
+SMTP_HOST="localhost"
+SMTP_PORT=587
+SMTP_USER=""
+SMTP_PASS=""
+RATE_LIMIT_WINDOW=900000
+RATE_LIMIT_MAX=100
+SESSION_SECRET="$(openssl rand -base64 32)"
+BCRYPT_ROUNDS=12
+EOF
+```
+
+### Step 5: Build Applications
 
 ```bash
 # Build backend
 cd backend
-npm run build
+sudo npm run build
+sudo npx prisma generate
+sudo npx prisma migrate deploy
+sudo npm run seed
 
 # Build frontend
 cd ../frontend
-npm install
-npm run build
+sudo npm run build
+cd ..
 ```
 
-### 5. Deployment Options
-
-#### Option A: Traditional VPS/Server Deployment
-
-1. **Upload files to your server**
-2. **Install dependencies and build**
-3. **Setup PM2 for process management:**
+### Step 6: Configure Nginx
 
 ```bash
-# Install PM2 globally
-npm install -g pm2
+# Create Nginx configuration
+sudo tee /etc/nginx/sites-available/xillix.co.ke << 'EOF'
+server {
+    listen 80;
+    server_name xillix.co.ke www.xillix.co.ke;
 
+    # Frontend (Next.js)
+    location / {
+        proxy_pass http://localhost:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_cache_bypass $http_upgrade;
+    }
+
+    # Backend API
+    location /api/ {
+        proxy_pass http://localhost:5000/;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_cache_bypass $http_upgrade;
+    }
+
+    # Static files
+    location /uploads/ {
+        alias /var/www/realto/backend/uploads/;
+        expires 1y;
+        add_header Cache-Control "public, immutable";
+    }
+}
+EOF
+
+# Enable site
+sudo ln -sf /etc/nginx/sites-available/xillix.co.ke /etc/nginx/sites-enabled/
+sudo rm -f /etc/nginx/sites-enabled/default
+sudo nginx -t
+sudo systemctl reload nginx
+```
+
+### Step 7: Start Applications with PM2
+
+```bash
 # Start applications
-pm2 start ecosystem.config.js
-pm2 save
-pm2 startup
+sudo pm2 start ecosystem.config.js
+sudo pm2 save
+sudo pm2 startup systemd -u root --hp /root
 ```
 
-4. **Setup Nginx reverse proxy** (use `config/nginx/nginx.prod.conf`)
-
-#### Option B: Docker Deployment
+### Step 8: SSL Certificate
 
 ```bash
-# Build and run with Docker Compose
-docker-compose -f docker-compose.prod.yml up -d
+# Install Certbot
+sudo apt install certbot python3-certbot-nginx -y
+
+# Get SSL certificate (ensure DNS is configured first)
+sudo certbot --nginx -d xillix.co.ke -d www.xillix.co.ke --non-interactive --agree-tos --email admin@xillix.co.ke
 ```
 
-#### Option C: Cloud Platform Deployment
+### Step 9: Configure Firewall
 
-**Vercel (Frontend) + Railway/Heroku (Backend):**
-
-1. **Frontend on Vercel:**
-   - Connect your GitHub repository
-   - Set build command: `cd frontend && npm run build`
-   - Set output directory: `frontend/.next`
-
-2. **Backend on Railway/Heroku:**
-   - Connect your GitHub repository
-   - Set build command: `cd backend && npm run build`
-   - Add environment variables
-   - Setup PostgreSQL addon
-
-### 6. Domain and SSL Setup
-
-1. Point your domain to your server IP
-2. Setup SSL certificate (Let's Encrypt recommended)
-3. Configure Nginx with SSL
-
-### 7. Post-Deployment Checklist
-
-- [ ] Database is accessible and seeded
-- [ ] Frontend loads correctly
-- [ ] API endpoints respond properly
-- [ ] Authentication works
-- [ ] Email notifications work
-- [ ] File uploads work (if implemented)
-- [ ] SSL certificate is valid
-- [ ] Monitoring is setup
-
-## 🔧 Configuration Files
-
-### Nginx Configuration
-Use `config/nginx/nginx.prod.conf` for production Nginx setup.
-
-### PM2 Configuration
-The `ecosystem.config.js` file is configured for production deployment.
-
-### Docker Configuration
-Use `docker-compose.prod.yml` for containerized deployment.
-
-## 📊 Monitoring and Maintenance
-
-### Health Checks
-- Backend health: `https://yourdomain.com/api/health`
-- Frontend: `https://yourdomain.com`
-
-### Logs
 ```bash
-# PM2 logs
+sudo ufw allow ssh
+sudo ufw allow 'Nginx Full'
+sudo ufw --force enable
+```
+
+## Verification Steps
+
+### 1. Check Services Status
+
+```bash
+# Check PM2 processes
+pm2 list
+
+# Check Nginx
+sudo systemctl status nginx
+
+# Check PostgreSQL
+sudo systemctl status postgresql
+
+# Check application logs
 pm2 logs
-
-# Docker logs
-docker-compose logs -f
 ```
 
-### Database Backups
+### 2. Test Application Access
+
+- Visit `https://xillix.co.ke` in your browser
+- Check that the homepage loads correctly
+- Test property listings and search functionality
+- Verify API endpoints: `https://xillix.co.ke/api/health`
+
+### 3. SSL Certificate Verification
+
 ```bash
-# PostgreSQL backup
-pg_dump -h localhost -U username -d realestate_prod > backup_$(date +%Y%m%d).sql
+# Check SSL certificate
+sudo certbot certificates
+
+# Test SSL configuration
+curl -I https://xillix.co.ke
 ```
 
-## 🚨 Troubleshooting
+## What Will Be Deployed
+
+Your `https://xillix.co.ke` will include:
+
+### Main Application
+
+- **Homepage**: Property listings with search and filters
+- **Property Details**: Enhanced property pages with image galleries
+- **Advanced Search**: AI-powered property search with filters
+- **User Authentication**: Login, registration, and user profiles
+- **Favorites/Wishlist**: Save and manage favorite properties
+- **Property Comparison**: Side-by-side property comparison tool
+- **Agent Contact**: Contact forms and agent information
+- **Tours Scheduling**: Schedule property viewings
+
+### API Endpoints
+
+- **Properties API**: `/api/properties` - Property CRUD operations
+- **Users API**: `/api/users` - User management
+- **Authentication**: `/api/auth` - Login/register endpoints
+- **Favorites**: `/api/favorites` - Wishlist management
+- **Search**: `/api/search` - Advanced search functionality
+- **Tours**: `/api/tours` - Tour scheduling
+
+### Admin Panel
+
+- Property management dashboard
+- User management
+- Analytics and reporting
+- Content management
+
+## Troubleshooting
 
 ### Common Issues
 
-1. **Database Connection Issues**
-   - Check DATABASE_URL in .env
-   - Ensure PostgreSQL is running
-   - Verify firewall settings
+1. **SSL Certificate Issues**
 
-2. **CORS Errors**
-   - Update CORS_ORIGIN in backend .env
-   - Check NEXT_PUBLIC_API_URL in frontend
+   ```bash
+   # If SSL fails, check DNS first
+   nslookup xillix.co.ke
 
-3. **Build Failures**
-   - Clear node_modules and reinstall
-   - Check Node.js version compatibility
-   - Verify all environment variables
+   # Retry SSL certificate
+   sudo certbot --nginx -d xillix.co.ke
+   ```
 
-4. **SSL Issues**
-   - Verify certificate installation
-   - Check Nginx configuration
-   - Ensure domain DNS is correct
+2. **Application Not Starting**
 
-## 📞 Support
+   ```bash
+   # Check PM2 logs
+   pm2 logs
 
-For deployment issues:
-1. Check the logs first
-2. Verify all environment variables
-3. Test API endpoints manually
-4. Check database connectivity
+   # Restart applications
+   pm2 restart all
+   ```
 
-## 🔄 Updates and Maintenance
+3. **Database Connection Issues**
 
-### Updating the Application
+   ```bash
+   # Check PostgreSQL status
+   sudo systemctl status postgresql
+
+   # Test database connection
+   sudo -u postgres psql -d realestate_prod -c "SELECT 1;"
+   ```
+
+4. **Nginx Configuration Issues**
+
+   ```bash
+   # Test Nginx configuration
+   sudo nginx -t
+
+   # Check Nginx logs
+   sudo tail -f /var/log/nginx/error.log
+   ```
+
+### Performance Optimization
+
+1. **Enable Gzip Compression**
+
+   ```bash
+   # Add to Nginx configuration
+   gzip on;
+   gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript;
+   ```
+
+2. **Set up Redis Caching** (Optional)
+   ```bash
+   sudo apt install redis-server
+   sudo systemctl enable redis-server
+   ```
+
+## Post-Deployment Tasks
+
+### 1. Configure Email Settings
+
+Update SMTP settings in `.env` file for email notifications:
+
 ```bash
-# Pull latest changes
-git pull origin main
+SMTP_HOST="your-smtp-server.com"
+SMTP_PORT=587
+SMTP_USER="your-email@xillix.co.ke"
+SMTP_PASS="your-email-password"
+```
 
-# Update dependencies
-npm install
-cd backend && npm install
-cd ../frontend && npm install
+### 2. Set up Monitoring
 
-# Rebuild and restart
-npm run build
+```bash
+# Install monitoring tools
+pm2 install pm2-logrotate
+pm2 set pm2-logrotate:max_size 10M
+pm2 set pm2-logrotate:retain 30
+```
+
+### 3. Configure Backups
+
+```bash
+# Create backup script
+sudo tee /usr/local/bin/backup-realto.sh << 'EOF'
+#!/bin/bash
+BACKUP_DIR="/var/backups/realto"
+DATE=$(date +%Y%m%d_%H%M%S)
+
+mkdir -p $BACKUP_DIR
+
+# Database backup
+sudo -u postgres pg_dump realestate_prod > $BACKUP_DIR/db_$DATE.sql
+
+# Files backup
+tar -czf $BACKUP_DIR/files_$DATE.tar.gz /var/www/realto/backend/uploads
+
+# Keep only last 7 days
+find $BACKUP_DIR -name "*.sql" -mtime +7 -delete
+find $BACKUP_DIR -name "*.tar.gz" -mtime +7 -delete
+EOF
+
+sudo chmod +x /usr/local/bin/backup-realto.sh
+
+# Add to crontab (daily backup at 2 AM)
+echo "0 2 * * * /usr/local/bin/backup-realto.sh" | sudo crontab -
+```
+
+## Maintenance Commands
+
+### Regular Maintenance
+
+```bash
+# Update application
+cd /var/www/realto
+sudo git pull origin main
+sudo npm install
+cd backend && sudo npm install && sudo npm run build
+cd ../frontend && sudo npm install && sudo npm run build
+sudo pm2 restart all
+
+# View logs
+pm2 logs
+
+# Monitor processes
+pm2 monit
+
+# Restart services
+sudo systemctl restart nginx
+sudo systemctl restart postgresql
 pm2 restart all
 ```
 
-### Database Migrations
+### System Updates
+
 ```bash
-cd backend
-npx prisma migrate deploy
+# Update system packages
+sudo apt update && sudo apt upgrade -y
+
+# Update Node.js (if needed)
+sudo npm install -g npm@latest
 ```
+
+## Support
+
+For deployment issues or questions:
+
+- Check the application logs: `pm2 logs`
+- Review Nginx logs: `sudo tail -f /var/log/nginx/error.log`
+- Check system logs: `sudo journalctl -f`
+
+## Security Considerations
+
+1. **Regular Updates**: Keep system and dependencies updated
+2. **Firewall**: Only allow necessary ports (22, 80, 443)
+3. **SSL**: Ensure SSL certificates are auto-renewed
+4. **Database**: Use strong passwords and limit access
+5. **Backups**: Regular automated backups
+6. **Monitoring**: Set up log monitoring and alerts
 
 ---
 
-## 📋 Version 1.0 Features Included
-
-✅ **Core Features:**
-- User authentication and authorization
-- Property listings (CRUD operations)
-- Property search and filtering
-- Agent profiles and management
-- Inquiry system
-- Favorites system
-
-✅ **Enhanced Features:**
-- Property management dashboard
-- Property analytics and performance tracking
-- Property comparison tool (up to 4 properties)
-- Saved searches with email alerts
-- Personalized property recommendations
-- Advanced filtering and sorting
-
-✅ **Technical Features:**
-- Responsive design for all devices
-- RESTful API with proper error handling
-- Database with proper relationships
-- Authentication with JWT
-- Input validation and sanitization
-- Production-ready configuration
-
-This deployment guide ensures your Real Estate Platform v1.0 is properly deployed and configured for production use.
+**Deployment Complete!** Your Real Estate Platform should now be accessible at
+`https://xillix.co.ke`

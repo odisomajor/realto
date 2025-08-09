@@ -34,9 +34,11 @@ let redis: Redis | null = null;
 // Initialize Redis connection if configured
 if (process.env.REDIS_URL) {
   redis = new Redis(process.env.REDIS_URL, {
-    retryDelayOnFailover: 100,
-    maxRetriesPerRequest: 3,
-    lazyConnect: true
+    connectTimeout: 5000,
+    lazyConnect: true,
+    maxRetriesPerRequest: 1,
+    enableReadyCheck: false,
+    retryDelayOnClusterDown: 300
   });
 }
 

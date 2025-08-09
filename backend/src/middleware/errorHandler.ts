@@ -4,6 +4,9 @@ import { ZodError } from 'zod';
 import { log } from '@/utils/logger';
 import { AppError } from '@/utils/errors';
 
+// Re-export AppError for convenience
+export { AppError } from '@/utils/errors';
+
 // Error response interface
 interface ErrorResponse {
   success: false;
