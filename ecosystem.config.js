@@ -1,7 +1,7 @@
 module.exports = {
   apps: [
     {
-      name: 'xillix-backend',
+      name: 'real-estate-backend',
       script: './backend/dist/server.js',
       cwd: './backend',
       instances: 'max',
@@ -59,7 +59,7 @@ module.exports = {
     },
     
     {
-      name: 'xillix-frontend',
+      name: 'real-estate-frontend',
       script: 'npm',
       args: 'start',
       cwd: './frontend',
