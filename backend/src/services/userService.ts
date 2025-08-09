@@ -257,19 +257,16 @@ export class UserService {
 
       return {
         totalProperties: user._count.properties,
+        activeProperties: 0, // TODO: Count active properties
+        soldProperties: 0, // TODO: Count sold properties
         totalInquiries: user._count.inquiries,
         totalAppointments: user._count.appointments,
         totalFavorites: user._count.favorites,
         totalReviews: user._count.reviews,
         averageRating: 0, // TODO: Calculate from reviews
-        responseRate: 0, // TODO: Calculate response rate
-        responseTime: 0, // TODO: Calculate average response time
-        profileViews: 0, // TODO: Implement profile view tracking
-        listingViews: 0, // TODO: Calculate from property views
-        conversionRate: 0, // TODO: Calculate conversion rate
-        activeListings: 0, // TODO: Count active properties
-        soldListings: 0, // TODO: Count sold properties
-        rentedListings: 0 // TODO: Count rented properties
+        totalViews: 0, // TODO: Calculate from property views
+        joinDate: user.createdAt,
+        lastActive: user.lastLoginAt
       };
     } catch (error) {
       logger.error('Error getting user stats:', error);
