@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { propertyApi } from '@/lib/api/properties';
-import { useAuth } from '@/hooks/useAuth';
+import { propertyApi } from '@/lib/api';
+import { useAuth } from '@/contexts/AuthContext';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import PropertyFormWizard from '@/components/properties/PropertyFormWizard';
 import { Property } from '@/types';
