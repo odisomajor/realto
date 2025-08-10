@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { useAuth } from '@/lib/auth'
 import { propertyApi } from '@/lib/api'
 import ProtectedRoute from '@/components/auth/ProtectedRoute'
@@ -9,6 +10,7 @@ import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { 
   Plus, 
   Search, 
@@ -24,11 +26,19 @@ import {
   Calendar,
   MapPin,
   Home,
-  DollarSign
+  DollarSign,
+  BarChart3,
+  Settings,
+  Grid,
+  List,
+  SortAsc
 } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Property } from '@/types'
+import PropertyManagementDashboard from '@/components/properties/PropertyManagementDashboard'
+import PropertyAnalyticsEnhanced from '@/components/properties/PropertyAnalyticsEnhanced'
+import PropertyBulkActions from '@/components/properties/PropertyBulkActions'
 
 interface PropertyStats {
   views: number
@@ -44,12 +54,16 @@ interface EnhancedProperty extends Omit<Property, 'status'> {
 
 export default function MyPropertiesPage() {
   const { user } = useAuth()
+  const router = useRouter()
   const [properties, setProperties] = useState<EnhancedProperty[]>([])
   const [filteredProperties, setFilteredProperties] = useState<EnhancedProperty[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [sortBy, setSortBy] = useState<string>('newest')
+  const [selectedProperties, setSelectedProperties] = useState<string[]>([])
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('list')
+  const [activeTab, setActiveTab] = useState('properties')
 
   useEffect(() => {
     fetchMyProperties()
@@ -65,7 +79,7 @@ export default function MyPropertiesPage() {
       const response = await propertyApi.getMyProperties()
       
       // Enhance properties with mock stats for demo
-      const enhancedProperties = response.data.map((property: Property) => ({
+      const enhancedProperties = response.data.data.map((property: Property) => ({
         ...property,
         status: Math.random() > 0.8 ? 'sold' : Math.random() > 0.6 ? 'inactive' : 'active',
         stats: {
@@ -174,21 +188,42 @@ export default function MyPropertiesPage() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">My Properties</h1>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">Property Management</h1>
             <p className="text-gray-600">
-              Manage your property listings and track performance
+              Manage your property listings and analytics
             </p>
           </div>
-          <Link href="/properties/new">
-            <Button className="flex items-center gap-2 mt-4 sm:mt-0">
-              <Plus className="h-4 w-4" />
-              Add New Property
-            </Button>
-          </Link>
+          <div className="flex items-center gap-3 mt-4 sm:mt-0">
+            <Link href="/properties/new">
+              <Button className="flex items-center gap-2">
+                <Plus className="h-4 w-4" />
+                Add Property
+              </Button>
+            </Link>
+          </div>
         </div>
 
-        {/* Stats Overview */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        {/* Tabs */}
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="properties" className="flex items-center gap-2">
+              <Grid className="h-4 w-4" />
+              Properties
+            </TabsTrigger>
+            <TabsTrigger value="dashboard" className="flex items-center gap-2">
+              <Settings className="h-4 w-4" />
+              Dashboard
+            </TabsTrigger>
+            <TabsTrigger value="analytics" className="flex items-center gap-2">
+              <BarChart3 className="h-4 w-4" />
+              Analytics
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="properties" className="space-y-6">
+
+            {/* Stats Overview */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           <Card>
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
@@ -242,184 +277,364 @@ export default function MyPropertiesPage() {
               </div>
             </CardContent>
           </Card>
-        </div>
-
-        {/* Filters and Search */}
-        <Card className="mb-8">
-          <CardContent className="p-6">
-            <div className="flex flex-col sm:flex-row gap-4">
-              <div className="flex-1">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                  <Input
-                    placeholder="Search properties..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10"
-                  />
-                </div>
-              </div>
-              
-              <select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-              >
-                <option value="all">All Status</option>
-                <option value="active">Active</option>
-                <option value="inactive">Inactive</option>
-                <option value="sold">Sold</option>
-                <option value="rented">Rented</option>
-              </select>
-              
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
-                className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-              >
-                <option value="newest">Newest First</option>
-                <option value="oldest">Oldest First</option>
-                <option value="price-high">Price: High to Low</option>
-                <option value="price-low">Price: Low to High</option>
-                <option value="views">Most Viewed</option>
-              </select>
             </div>
-          </CardContent>
-        </Card>
 
-        {/* Properties List */}
-        {filteredProperties.length > 0 ? (
-          <div className="space-y-6">
-            {filteredProperties.map((property) => (
-              <Card key={property.id} className="overflow-hidden">
-                <CardContent className="p-0">
-                  <div className="flex flex-col lg:flex-row">
-                    {/* Property Image */}
-                    <div className="lg:w-80 h-48 lg:h-auto relative">
-                      <Image
-                        src={property.images?.[0] || '/placeholder-property.jpg'}
-                        alt={property.title}
-                        fill
-                        className="object-cover"
+            {/* Bulk Actions */}
+            {selectedProperties.length > 0 && (
+              <PropertyBulkActions
+                selectedProperties={selectedProperties}
+                onBulkAction={async (action: string, propertyIds: string[]) => {
+                  try {
+                    switch (action) {
+                      case 'delete':
+                        if (window.confirm(`Are you sure you want to delete ${propertyIds.length} properties?`)) {
+                          await Promise.all(propertyIds.map(id => propertyApi.deleteProperty(id)));
+                          setProperties(properties.filter(p => !propertyIds.includes(p.id)));
+                          setSelectedProperties([]);
+                        }
+                        break;
+                      case 'activate':
+                        setProperties(properties.map(p => 
+                          propertyIds.includes(p.id) ? { ...p, status: 'active' } : p
+                        ));
+                        setSelectedProperties([]);
+                        break;
+                      case 'deactivate':
+                        setProperties(properties.map(p => 
+                          propertyIds.includes(p.id) ? { ...p, status: 'inactive' } : p
+                        ));
+                        setSelectedProperties([]);
+                        break;
+                    }
+                  } catch (error) {
+                    console.error('Error performing bulk action:', error);
+                  }
+                }}
+                onClearSelection={() => setSelectedProperties([])}
+              />
+            )}
+
+            {/* Filters and Search */}
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex flex-col sm:flex-row gap-4">
+                  <div className="flex-1">
+                    <div className="relative">
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                      <Input
+                        placeholder="Search properties..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="pl-10"
                       />
-                      <div className="absolute top-4 left-4">
-                        {getStatusBadge(property.status)}
-                      </div>
-                    </div>
-                    
-                    {/* Property Details */}
-                    <div className="flex-1 p-6">
-                      <div className="flex justify-between items-start mb-4">
-                        <div>
-                          <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                            {property.title}
-                          </h3>
-                          <div className="flex items-center text-gray-600 mb-2">
-                            <MapPin className="h-4 w-4 mr-1" />
-                            {property.location}
-                          </div>
-                          <div className="flex items-center space-x-4 text-sm text-gray-500 mb-2">
-                            <span>{property.bedrooms} beds</span>
-                            <span>{property.bathrooms} baths</span>
-                            <span>{property.area} m²</span>
-                          </div>
-                          <div className="flex items-center text-green-600 font-semibold text-lg">
-                            <DollarSign className="h-4 w-4 mr-1" />
-                            {formatCurrency(property.price)}
-                          </div>
-                        </div>
-                        
-                        <div className="flex items-center gap-2">
-                          <Link href={`/properties/${property.id}`}>
-                            <Button variant="outline" size="sm">
-                              <Eye className="h-4 w-4 mr-1" />
-                              View
-                            </Button>
-                          </Link>
-                          <Link href={`/properties/edit/${property.id}`}>
-                            <Button variant="outline" size="sm">
-                              <Edit className="h-4 w-4 mr-1" />
-                              Edit
-                            </Button>
-                          </Link>
-                          <Button 
-                            variant="outline" 
-                            size="sm" 
-                            className="text-red-600 hover:text-red-700"
-                            onClick={() => handleDeleteProperty(property.id)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </div>
-                      
-                      {/* Property Stats */}
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-                        <div className="text-center p-3 bg-gray-50 rounded-lg">
-                          <div className="flex items-center justify-center mb-1">
-                            <Eye className="h-4 w-4 text-blue-600 mr-1" />
-                            <span className="font-semibold">{property.stats?.views || 0}</span>
-                          </div>
-                          <p className="text-xs text-gray-600">Views</p>
-                        </div>
-                        
-                        <div className="text-center p-3 bg-gray-50 rounded-lg">
-                          <div className="flex items-center justify-center mb-1">
-                            <MessageSquare className="h-4 w-4 text-purple-600 mr-1" />
-                            <span className="font-semibold">{property.stats?.inquiries || 0}</span>
-                          </div>
-                          <p className="text-xs text-gray-600">Inquiries</p>
-                        </div>
-                        
-                        <div className="text-center p-3 bg-gray-50 rounded-lg">
-                          <div className="flex items-center justify-center mb-1">
-                            <Heart className="h-4 w-4 text-red-600 mr-1" />
-                            <span className="font-semibold">{property.stats?.favorites || 0}</span>
-                          </div>
-                          <p className="text-xs text-gray-600">Favorites</p>
-                        </div>
-                        
-                        <div className="text-center p-3 bg-gray-50 rounded-lg">
-                          <div className="flex items-center justify-center mb-1">
-                            <Calendar className="h-4 w-4 text-green-600 mr-1" />
-                            <span className="text-xs font-semibold">{formatDate(property.createdAt)}</span>
-                          </div>
-                          <p className="text-xs text-gray-600">Listed</p>
-                        </div>
-                      </div>
-                      
-                      {/* Property Description */}
-                      <p className="text-gray-600 text-sm line-clamp-2">
-                        {property.description}
-                      </p>
                     </div>
                   </div>
+                  
+                  <Select value={statusFilter} onValueChange={setStatusFilter}>
+                    <SelectTrigger className="w-full sm:w-48">
+                      <Filter className="w-4 h-4 mr-2" />
+                      <SelectValue placeholder="Filter by status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Status</SelectItem>
+                      <SelectItem value="active">Active</SelectItem>
+                      <SelectItem value="inactive">Inactive</SelectItem>
+                      <SelectItem value="sold">Sold</SelectItem>
+                      <SelectItem value="rented">Rented</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  
+                  <Select value={sortBy} onValueChange={setSortBy}>
+                    <SelectTrigger className="w-full sm:w-48">
+                      <SortAsc className="w-4 h-4 mr-2" />
+                      <SelectValue placeholder="Sort by" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="newest">Newest First</SelectItem>
+                      <SelectItem value="oldest">Oldest First</SelectItem>
+                      <SelectItem value="price-high">Price: High to Low</SelectItem>
+                      <SelectItem value="price-low">Price: Low to High</SelectItem>
+                      <SelectItem value="views">Most Viewed</SelectItem>
+                    </SelectContent>
+                  </Select>
+
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')}
+                  >
+                    {viewMode === 'grid' ? <List className="h-4 w-4" /> : <Grid className="h-4 w-4" />}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Properties List */}
+            {filteredProperties.length > 0 ? (
+              <div className={viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6' : 'space-y-6'}>
+                {filteredProperties.map((property) => (
+                  <Card key={property.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+                    <CardContent className="p-6">
+                      {viewMode === 'list' ? (
+                        <div className="flex flex-col lg:flex-row gap-6">
+                          {/* Selection Checkbox */}
+                          <div className="flex items-start">
+                            <input
+                              type="checkbox"
+                              checked={selectedProperties.includes(property.id)}
+                              onChange={(e) => {
+                                if (e.target.checked) {
+                                  setSelectedProperties([...selectedProperties, property.id]);
+                                } else {
+                                  setSelectedProperties(selectedProperties.filter(id => id !== property.id));
+                                }
+                              }}
+                              className="mt-1 rounded"
+                            />
+                          </div>
+
+                          {/* Property Image */}
+                          <div className="lg:w-80 h-48 lg:h-auto relative">
+                            <Image
+                              src={property.images?.[0] || '/placeholder-property.jpg'}
+                              alt={property.title}
+                              fill
+                              className="object-cover rounded-lg"
+                            />
+                            <div className="absolute top-4 left-4">
+                              {getStatusBadge(property.status)}
+                            </div>
+                          </div>
+                          
+                          {/* Property Details */}
+                          <div className="flex-1">
+                            <div className="flex justify-between items-start mb-4">
+                              <div>
+                                <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                                  {property.title}
+                                </h3>
+                                <div className="flex items-center text-gray-600 mb-2">
+                                  <MapPin className="h-4 w-4 mr-1" />
+                                  {property.location}
+                                </div>
+                                <div className="flex items-center space-x-4 text-sm text-gray-500 mb-2">
+                                  <span>{property.bedrooms} beds</span>
+                                  <span>{property.bathrooms} baths</span>
+                                  <span>{property.area} m²</span>
+                                </div>
+                                <div className="flex items-center text-green-600 font-semibold text-lg">
+                                  <DollarSign className="h-4 w-4 mr-1" />
+                                  {formatCurrency(property.price)}
+                                </div>
+                              </div>
+                              
+                              <div className="flex items-center gap-2">
+                                <Button 
+                                  variant="outline" 
+                                  size="sm"
+                                  onClick={() => router.push(`/properties/${property.id}`)}
+                                >
+                                  <Eye className="h-4 w-4 mr-1" />
+                                  View
+                                </Button>
+                                <Button 
+                                  variant="outline" 
+                                  size="sm"
+                                  onClick={() => router.push(`/properties/edit/${property.id}`)}
+                                >
+                                  <Edit className="h-4 w-4 mr-1" />
+                                  Edit
+                                </Button>
+                                <Button 
+                                  variant="outline" 
+                                  size="sm" 
+                                  className="text-red-600 hover:text-red-700"
+                                  onClick={() => handleDeleteProperty(property.id)}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </div>
+                            
+                            {/* Property Stats */}
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                              <div className="text-center p-3 bg-gray-50 rounded-lg">
+                                <div className="flex items-center justify-center mb-1">
+                                  <Eye className="h-4 w-4 text-blue-600 mr-1" />
+                                  <span className="font-semibold">{property.stats?.views || 0}</span>
+                                </div>
+                                <p className="text-xs text-gray-600">Views</p>
+                              </div>
+                              
+                              <div className="text-center p-3 bg-gray-50 rounded-lg">
+                                <div className="flex items-center justify-center mb-1">
+                                  <MessageSquare className="h-4 w-4 text-purple-600 mr-1" />
+                                  <span className="font-semibold">{property.stats?.inquiries || 0}</span>
+                                </div>
+                                <p className="text-xs text-gray-600">Inquiries</p>
+                              </div>
+                              
+                              <div className="text-center p-3 bg-gray-50 rounded-lg">
+                                <div className="flex items-center justify-center mb-1">
+                                  <Heart className="h-4 w-4 text-red-600 mr-1" />
+                                  <span className="font-semibold">{property.stats?.favorites || 0}</span>
+                                </div>
+                                <p className="text-xs text-gray-600">Favorites</p>
+                              </div>
+                              
+                              <div className="text-center p-3 bg-gray-50 rounded-lg">
+                                <div className="flex items-center justify-center mb-1">
+                                  <Calendar className="h-4 w-4 text-green-600 mr-1" />
+                                  <span className="text-xs font-semibold">{formatDate(property.createdAt)}</span>
+                                </div>
+                                <p className="text-xs text-gray-600">Listed</p>
+                              </div>
+                            </div>
+                            
+                            {/* Property Description */}
+                            <p className="text-gray-600 text-sm line-clamp-2">
+                              {property.description}
+                            </p>
+                          </div>
+                        </div>
+                      ) : (
+                        // Grid View
+                        <div className="space-y-4">
+                          <div className="aspect-video relative">
+                            <Image
+                              src={property.images?.[0] || '/placeholder-property.jpg'}
+                              alt={property.title}
+                              fill
+                              className="object-cover rounded-lg"
+                            />
+                            <div className="absolute top-4 left-4">
+                              {getStatusBadge(property.status)}
+                            </div>
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <div className="flex items-center gap-2">
+                              <input
+                                type="checkbox"
+                                checked={selectedProperties.includes(property.id)}
+                                onChange={(e) => {
+                                  if (e.target.checked) {
+                                    setSelectedProperties([...selectedProperties, property.id]);
+                                  } else {
+                                    setSelectedProperties(selectedProperties.filter(id => id !== property.id));
+                                  }
+                                }}
+                                className="rounded"
+                              />
+                              <h3 className="font-semibold text-gray-900 truncate flex-1">
+                                {property.title}
+                              </h3>
+                            </div>
+                            
+                            <p className="text-2xl font-bold text-green-600">
+                              {formatCurrency(property.price)}
+                            </p>
+                            
+                            <div className="flex items-center justify-between text-sm text-gray-500">
+                              <span>{property.stats?.views || 0} views</span>
+                              <span>{property.stats?.inquiries || 0} inquiries</span>
+                            </div>
+                            
+                            <div className="flex items-center gap-2 pt-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => router.push(`/properties/${property.id}`)}
+                                className="flex-1"
+                              >
+                                <Eye className="w-4 h-4 mr-1" />
+                                View
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => router.push(`/properties/edit/${property.id}`)}
+                                className="flex-1"
+                              >
+                                <Edit className="w-4 h-4 mr-1" />
+                                Edit
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            ) : (
+              <Card>
+                <CardContent className="p-12 text-center">
+                  <Home className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">No properties found</h3>
+                  <p className="text-gray-600 mb-6">
+                    {searchTerm || statusFilter !== 'all' 
+                      ? 'Try adjusting your search or filters'
+                      : 'Start by adding your first property listing'
+                    }
+                  </p>
+                  {!searchTerm && statusFilter === 'all' && (
+                    <Link href="/properties/new">
+                      <Button>
+                        <Plus className="h-4 w-4 mr-2" />
+                        Add Your First Property
+                      </Button>
+                    </Link>
+                  )}
                 </CardContent>
               </Card>
-            ))}
-          </div>
-        ) : (
-          <Card>
-            <CardContent className="p-12 text-center">
-              <Home className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">No properties found</h3>
-              <p className="text-gray-600 mb-6">
-                {searchTerm || statusFilter !== 'all' 
-                  ? 'Try adjusting your search or filters'
-                  : 'Start by adding your first property listing'
+            )}
+          </TabsContent>
+
+          <TabsContent value="dashboard">
+            <PropertyManagementDashboard
+              properties={properties}
+              onPropertyUpdate={(updatedProperty) => {
+                setProperties(properties.map(p => 
+                  p.id === updatedProperty.id ? updatedProperty : p
+                ));
+              }}
+              onBulkAction={async (action: string, propertyIds: string[]) => {
+                try {
+                  switch (action) {
+                    case 'delete':
+                      if (window.confirm(`Are you sure you want to delete ${propertyIds.length} properties?`)) {
+                        await Promise.all(propertyIds.map(id => propertyApi.deleteProperty(id)));
+                        setProperties(properties.filter(p => !propertyIds.includes(p.id)));
+                      }
+                      break;
+                    case 'activate':
+                      setProperties(properties.map(p => 
+                        propertyIds.includes(p.id) ? { ...p, status: 'active' } : p
+                      ));
+                      break;
+                    case 'deactivate':
+                      setProperties(properties.map(p => 
+                        propertyIds.includes(p.id) ? { ...p, status: 'inactive' } : p
+                      ));
+                      break;
+                  }
+                } catch (error) {
+                  console.error('Error performing bulk action:', error);
                 }
-              </p>
-              {!searchTerm && statusFilter === 'all' && (
-                <Link href="/properties/new">
-                  <Button>
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add Your First Property
-                  </Button>
-                </Link>
-              )}
-            </CardContent>
-          </Card>
-        )}
+              }}
+            />
+          </TabsContent>
+
+          <TabsContent value="analytics">
+            <PropertyAnalyticsEnhanced
+              userId={user?.id}
+              dateRange="30d"
+              propertyType="all"
+              location="all"
+            />
+          </TabsContent>
+        </Tabs>
       </div>
     </ProtectedRoute>
   )

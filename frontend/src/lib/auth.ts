@@ -82,19 +82,19 @@ export const useAuth = create<AuthState>()(
         set({ isLoading: true })
         try {
           const response = await authApi.register(userData)
-          const { user, tokens } = response.data
+          const { user, token } = response.data
           
           set({
             user,
-            token: tokens.accessToken,
-            refreshToken: tokens.refreshToken,
+            token: token,
+            refreshToken: null, // Backend doesn't return refresh token for register
             isAuthenticated: true,
             isLoading: false
           })
 
           // Store token in localStorage for API interceptor
           if (typeof window !== 'undefined') {
-            localStorage.setItem('token', tokens.accessToken)
+            localStorage.setItem('token', token)
           }
         } catch (error) {
           set({ isLoading: false })

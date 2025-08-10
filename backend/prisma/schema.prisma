@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
@@ -16,7 +16,7 @@ model User {
   lastName  String
   phone     String?
   avatar    String?
-  role      UserRole @default(USER)
+  role      String @default("USER") // USER, AGENT, ADMIN, SUPER_ADMIN
 
   // Profile
   bio      String?
@@ -84,8 +84,8 @@ model Property {
   slug        String @unique
 
   // Basic Info
-  propertyType PropertyType // HOUSE, APARTMENT, COMMERCIAL, LAND, WAREHOUSE, CONTAINER
-  listingType  ListingType // FOR_SALE, FOR_RENT
+  propertyType String // HOUSE, APARTMENT, COMMERCIAL, LAND, WAREHOUSE, CONTAINER
+  listingType  String // FOR_SALE, FOR_RENT
   status       String       @default("ACTIVE") // ACTIVE, SOLD, RENTED, PENDING, INACTIVE
 
   // Pricing
@@ -241,26 +241,4 @@ model PasswordResetToken {
   createdAt DateTime @default(now())
 
   @@map("password_reset_tokens")
-}
-
-// Enums
-enum UserRole {
-  USER
-  AGENT
-  ADMIN
-  SUPER_ADMIN
-}
-
-enum PropertyType {
-  HOUSE
-  APARTMENT
-  COMMERCIAL
-  LAND
-  WAREHOUSE
-  CONTAINER
-}
-
-enum ListingType {
-  FOR_SALE
-  FOR_RENT
 }

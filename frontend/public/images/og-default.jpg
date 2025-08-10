@@ -1,0 +1,75 @@
+<svg width="1200" height="630" viewBox="0 0 1200 630" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="1200" height="630" fill="url(#gradient)"/>
+  
+  <!-- Gradient Definition -->
+  <defs>
+    <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#10b981;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#059669;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Logo/Brand -->
+  <text x="100" y="150" font-family="Arial, sans-serif" font-size="72" font-weight="bold" fill="white">
+    Xillix
+  </text>
+  
+  <!-- Tagline -->
+  <text x="100" y="220" font-family="Arial, sans-serif" font-size="32" fill="white" opacity="0.9">
+    Kenya Real Estate Portal
+  </text>
+  
+  <!-- Main Message -->
+  <text x="100" y="320" font-family="Arial, sans-serif" font-size="48" font-weight="600" fill="white">
+    Find Your Dream Property
+  </text>
+  <text x="100" y="380" font-family="Arial, sans-serif" font-size="48" font-weight="600" fill="white">
+    in Kenya
+  </text>
+  
+  <!-- Features -->
+  <text x="100" y="450" font-family="Arial, sans-serif" font-size="24" fill="white" opacity="0.8">
+    • Houses • Land • Commercial Properties • Rentals
+  </text>
+  
+  <!-- Location indicators -->
+  <text x="100" y="500" font-family="Arial, sans-serif" font-size="20" fill="white" opacity="0.7">
+    Nairobi • Mombasa • Kisumu • Nakuru • All Major Cities
+  </text>
+  
+  <!-- Property icons -->
+  <g transform="translate(800, 200)">
+    <!-- House icon -->
+    <rect x="0" y="40" width="80" height="60" fill="white" opacity="0.2" rx="4"/>
+    <polygon points="40,20 10,50 70,50" fill="white" opacity="0.2"/>
+    <rect x="25" y="60" width="15" height="25" fill="white" opacity="0.3"/>
+    <rect x="50" y="55" width="12" height="12" fill="white" opacity="0.3"/>
+    
+    <!-- Building icon -->
+    <g transform="translate(120, 0)">
+      <rect x="0" y="30" width="60" height="70" fill="white" opacity="0.2" rx="2"/>
+      <rect x="10" y="40" width="8" height="8" fill="white" opacity="0.3"/>
+      <rect x="25" y="40" width="8" height="8" fill="white" opacity="0.3"/>
+      <rect x="40" y="40" width="8" height="8" fill="white" opacity="0.3"/>
+      <rect x="10" y="55" width="8" height="8" fill="white" opacity="0.3"/>
+      <rect x="25" y="55" width="8" height="8" fill="white" opacity="0.3"/>
+      <rect x="40" y="55" width="8" height="8" fill="white" opacity="0.3"/>
+      <rect x="10" y="70" width="8" height="8" fill="white" opacity="0.3"/>
+      <rect x="25" y="70" width="8" height="8" fill="white" opacity="0.3"/>
+      <rect x="40" y="70" width="8" height="8" fill="white" opacity="0.3"/>
+    </g>
+    
+    <!-- Land/Tree icon -->
+    <g transform="translate(240, 0)">
+      <ellipse cx="30" cy="90" rx="35" ry="10" fill="white" opacity="0.2"/>
+      <rect x="28" y="60" width="4" height="30" fill="white" opacity="0.3"/>
+      <circle cx="30" cy="50" r="20" fill="white" opacity="0.2"/>
+    </g>
+  </g>
+  
+  <!-- Website URL -->
+  <text x="100" y="580" font-family="Arial, sans-serif" font-size="28" font-weight="500" fill="white">
+    xillix.co.ke
+  </text>
+</svg>

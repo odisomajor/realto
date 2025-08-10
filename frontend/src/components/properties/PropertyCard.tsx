@@ -41,9 +41,11 @@ const PropertyCard: React.FC<PropertyCardProps> = ({ property }) => {
             <span className={`inline-block px-2 py-1 text-xs font-semibold rounded-full ${
                 type === 'sale' 
                   ? 'bg-green-100 text-green-800' 
-                  : 'bg-green-100 text-green-800'
+                  : type === 'rent'
+                  ? 'bg-blue-100 text-blue-800'
+                  : 'bg-orange-100 text-orange-800'
               }`}>
-              For {type === 'sale' ? 'Sale' : 'Rent'}
+              {type === 'sale' ? 'For Sale' : type === 'rent' ? 'For Rent' : 'Upcoming Project'}
             </span>
           </div>
           <div className="absolute top-3 right-3">
@@ -52,9 +54,11 @@ const PropertyCard: React.FC<PropertyCardProps> = ({ property }) => {
                 ? 'bg-green-100 text-green-800'
                 : status === 'pending'
                 ? 'bg-yellow-100 text-yellow-800'
+                : status === 'under-construction'
+                ? 'bg-orange-100 text-orange-800'
                 : 'bg-red-100 text-red-800'
             }`}>
-              {status.charAt(0).toUpperCase() + status.slice(1)}
+              {status === 'under-construction' ? 'Under Construction' : status.charAt(0).toUpperCase() + status.slice(1)}
             </span>
           </div>
         </div>
@@ -75,8 +79,11 @@ const PropertyCard: React.FC<PropertyCardProps> = ({ property }) => {
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center text-green-600">
             <BanknotesIcon className="h-5 w-5 mr-1" />
-            <span className="text-xl font-bold">{formatPrice(price)}</span>
+            <span className="text-xl font-bold">
+              {type === 'upcoming' ? `From ${formatPrice(price)}` : formatPrice(price)}
+            </span>
             {type === 'rent' && <span className="text-sm text-gray-500 ml-1">/month</span>}
+            {type === 'upcoming' && <span className="text-sm text-gray-500 ml-1">expected</span>}
           </div>
         </div>
 

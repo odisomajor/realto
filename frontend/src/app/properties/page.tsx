@@ -1,10 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import PropertyFilters, { PropertyFilters as PropertyFiltersType } from '@/components/properties/PropertyFilters';
 import { propertyApi, geocodingApi } from '@/lib/api';
 import PropertyCard from '@/components/properties/PropertyCard';
 import GoogleMap from '@/components/maps/GoogleMap';
+import SEOHead from '@/components/SEO/SEOHead';
 import { Button } from '@/components/ui/Button';
 import { 
   MapIcon, 
@@ -25,7 +26,7 @@ import {
   Bell,
   Calendar
 } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 interface Property {
   id: string;
@@ -38,9 +39,9 @@ interface Property {
   bedrooms: number;
   bathrooms: number;
   area: number;
-  type: 'sale' | 'rent';
+  type: 'sale' | 'rent' | 'upcoming';
   category: 'residential' | 'commercial' | 'land';
-  status: 'available' | 'sold' | 'rented' | 'pending';
+  status: 'available' | 'sold' | 'rented' | 'pending' | 'under-construction';
   features: string[];
   images: string[];
   agent: {
@@ -57,6 +58,7 @@ interface Property {
 
 export default function PropertiesPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [properties, setProperties] = useState<Property[]>([]);
   const [filteredProperties, setFilteredProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
@@ -79,9 +81,36 @@ export default function PropertiesPage() {
     radius: '10'
   });
 
+  // Initialize filters from URL parameters
+  useEffect(() => {
+    const typeParam = searchParams.get('type')
+    const categoryParam = searchParams.get('category')
+    
+    if (typeParam && (typeParam === 'sale' || typeParam === 'rent' || typeParam === 'upcoming')) {
+      setCurrentFilters(prev => ({
+        ...prev,
+        type: typeParam
+      }))
+    }
+    
+    if (categoryParam && (categoryParam === 'residential' || categoryParam === 'commercial' || categoryParam === 'land')) {
+      setCurrentFilters(prev => ({
+        ...prev,
+        category: categoryParam
+      }))
+    }
+  }, [searchParams])
+
   useEffect(() => {
     fetchProperties();
   }, []);
+
+  // Apply filters when currentFilters change
+  useEffect(() => {
+    if (properties.length > 0) {
+      handleSearch(currentFilters);
+    }
+  }, [currentFilters, properties]);
 
   const fetchProperties = async () => {
     try {
@@ -98,7 +127,7 @@ export default function PropertiesPage() {
     }
   };
 
-  const handleSearch = async (filters: PropertyFiltersType) => {
+  const handleSearch = useCallback(async (filters: PropertyFiltersType) => {
     try {
       setCurrentFilters(filters);
       let filtered = [...properties];
@@ -222,7 +251,7 @@ export default function PropertiesPage() {
       console.error('Search error:', error);
       setError('Failed to apply search filters');
     }
-  };
+  }, [properties]);
 
   if (loading) {
     return (
@@ -248,6 +277,12 @@ export default function PropertiesPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <SEOHead 
+        title="Properties for Sale & Rent in Kenya"
+        description="Browse thousands of properties for sale and rent in Kenya. Find houses, apartments, land, and commercial properties in Nairobi, Mombasa, Kisumu, and other major cities."
+        canonical="https://xillix.co.ke/properties"
+      />
+      
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between mb-8">

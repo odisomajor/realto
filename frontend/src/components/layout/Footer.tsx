@@ -15,6 +15,7 @@ const Footer = () => {
     properties: [
       { name: 'Buy Properties', href: '/properties?type=sale' },
       { name: 'Rent Properties', href: '/properties?type=rent' },
+      { name: 'Upcoming Projects', href: '/properties?type=upcoming' },
       { name: 'Commercial', href: '/properties?category=commercial' },
       { name: 'Land', href: '/properties?category=land' },
     ],
@@ -36,7 +37,7 @@ const Footer = () => {
               <div className="w-8 h-8 bg-green-600 rounded-lg flex items-center justify-center">
                 <span className="text-white font-bold text-lg">X</span>
               </div>
-              <span className="text-xl font-bold text-white">Xillix Realto</span>
+              <span className="text-xl font-bold text-white">Xillix</span>
             </div>
             <p className="text-gray-400 text-sm leading-6">
               Xillix is Kenya's premier real estate platform, connecting buyers, sellers, and renters with their perfect properties.

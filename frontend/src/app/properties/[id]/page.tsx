@@ -3,12 +3,14 @@
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
+import Head from 'next/head';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/badge';
 import { Property } from '@/types';
 import { usePropertyViewTracker } from '@/components/auth/BrowsingTracker';
 import PropertyDetails from '@/components/properties/PropertyDetails';
+import SEOHead from '@/components/SEO/SEOHead';
 import { 
   ArrowLeft,
   Share2,
@@ -231,6 +233,13 @@ export default function PropertyDetailPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <SEOHead 
+        title={`${property.title} - ${formatPrice(property.price)}`}
+        description={property.description}
+        property={property}
+        canonical={`https://xillix.co.ke/properties/${property.id}`}
+      />
+      
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Breadcrumb */}
         <nav className="flex items-center space-x-2 text-sm text-gray-600 mb-6">

@@ -27,11 +27,12 @@ const Header = () => {
 
   const navigation = [
     { name: 'Home', href: '/' },
-    { name: 'Properties', href: '/properties' },
     { name: 'Buy', href: '/properties?type=sale' },
     { name: 'Rent', href: '/properties?type=rent' },
+    { name: 'Properties', href: '/properties?type=upcoming' },
+    { name: 'Agents', href: '/agents' },
     { name: 'About', href: '/about' },
-    { name: 'Contact', href: '/contact' },
+    { name: 'Contact', href: '/contact' }
   ]
 
   // Close user menu when clicking outside
@@ -70,7 +71,7 @@ const Header = () => {
               <div className="w-8 h-8 bg-green-600 rounded-lg flex items-center justify-center">
                 <span className="text-white font-bold text-lg">X</span>
               </div>
-              <span className="text-xl font-bold text-gray-900">Xillix Realto</span>
+              <span className="text-xl font-bold text-gray-900">Xillix</span>
             </Link>
           </div>
 

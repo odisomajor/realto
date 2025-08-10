@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/Input'
+import GoogleMap from '@/components/maps/GoogleMap'
 import { 
   MapPin,
   Bed,
@@ -375,19 +376,34 @@ export default function PropertyDetails({
             </Card>
           )}
 
-          {/* Location Map Placeholder */}
+          {/* Location Map */}
           <Card>
             <CardHeader>
               <CardTitle>Location</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="h-64 bg-gray-200 rounded-lg flex items-center justify-center">
-                <div className="text-center text-gray-500">
-                  <MapPinIcon className="h-12 w-12 mx-auto mb-2" />
-                  <p>Interactive map will be displayed here</p>
-                  <p className="text-sm">{property.location}</p>
+              {property.coordinates ? (
+                <>
+                  <div className="mb-2 text-sm text-gray-600">
+                    Debug: Coordinates - Lat: {property.coordinates.lat}, Lng: {property.coordinates.lng}
+                  </div>
+                  <GoogleMap
+                    properties={[property]}
+                    center={property.coordinates}
+                    zoom={15}
+                    height="300px"
+                    className="w-full"
+                  />
+                </>
+              ) : (
+                <div className="h-64 bg-gray-200 rounded-lg flex items-center justify-center">
+                  <div className="text-center text-gray-500">
+                    <MapPinIcon className="h-12 w-12 mx-auto mb-2" />
+                    <p>Interactive map will be displayed here</p>
+                    <p className="text-sm">{property.location}</p>
+                  </div>
                 </div>
-              </div>
+              )}
             </CardContent>
           </Card>
         </div>

@@ -325,10 +325,10 @@ export function UserDashboard({ userId }: UserDashboardProps) {
             <Button 
               variant="outline"
               className="bg-white/10 border-white/20 text-white hover:bg-white/20"
-              onClick={() => router.push('/profile')}
+              onClick={() => router.push('/dashboard/profile')}
             >
               <Settings className="h-4 w-4 mr-2" />
-              Settings
+              Profile
             </Button>
           </div>
         </div>

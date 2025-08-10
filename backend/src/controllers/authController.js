@@ -121,11 +121,6 @@ const getProfile = async (req, res) => {
         avatar: true,
         role: true,
         bio: true,
-        address: true,
-        city: true,
-        county: true,
-        licenseNumber: true,
-        yearsExperience: true,
         emailVerified: true,
         phoneVerified: true,
         createdAt: true,
@@ -151,12 +146,7 @@ const updateProfile = async (req, res) => {
       firstName,
       lastName,
       phone,
-      bio,
-      address,
-      city,
-      county,
-      licenseNumber,
-      yearsExperience
+      bio
     } = req.body;
 
     const updatedUser = await prisma.user.update({
@@ -165,12 +155,7 @@ const updateProfile = async (req, res) => {
         ...(firstName && { firstName }),
         ...(lastName && { lastName }),
         ...(phone && { phone }),
-        ...(bio !== undefined && { bio }),
-        ...(address !== undefined && { address }),
-        ...(city !== undefined && { city }),
-        ...(county !== undefined && { county }),
-        ...(licenseNumber !== undefined && { licenseNumber }),
-        ...(yearsExperience !== undefined && { yearsExperience })
+        ...(bio !== undefined && { bio })
       },
       select: {
         id: true,
@@ -181,11 +166,6 @@ const updateProfile = async (req, res) => {
         avatar: true,
         role: true,
         bio: true,
-        address: true,
-        city: true,
-        county: true,
-        licenseNumber: true,
-        yearsExperience: true,
         emailVerified: true,
         phoneVerified: true,
         updatedAt: true
@@ -205,12 +185,24 @@ const updateProfile = async (req, res) => {
 // Change password
 const changePassword = async (req, res) => {
   try {
+    console.log('Change password request received');
+    console.log('Request body:', { ...req.body, currentPassword: '[HIDDEN]', newPassword: '[HIDDEN]' });
+    console.log('User ID from token:', req.user?.id);
+
     const { currentPassword, newPassword } = req.body;
+
+    // Validate input
+    if (!currentPassword || !newPassword) {
+      console.log('Missing required fields');
+      return res.status(400).json({ error: 'Current password and new password are required' });
+    }
 
     // Get user with password
     const user = await prisma.user.findUnique({
       where: { id: req.user.id }
     });
+
+    console.log('User found:', user ? 'Yes' : 'No');
 
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
@@ -218,6 +210,8 @@ const changePassword = async (req, res) => {
 
     // Verify current password
     const isCurrentPasswordValid = await bcrypt.compare(currentPassword, user.password);
+    console.log('Current password valid:', isCurrentPasswordValid);
+    
     if (!isCurrentPasswordValid) {
       return res.status(400).json({ error: 'Current password is incorrect' });
     }
@@ -231,6 +225,7 @@ const changePassword = async (req, res) => {
       data: { password: hashedNewPassword }
     });
 
+    console.log('Password updated successfully');
     res.json({ message: 'Password changed successfully' });
   } catch (error) {
     console.error('Change password error:', error);

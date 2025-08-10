@@ -49,70 +49,58 @@ function MapComponent({
 
   // Initialize map
   useEffect(() => {
-    if (!mapRef.current) return;
+    if (!mapRef.current || !window.google) return;
 
-    const initMap = async () => {
-      try {
-        await loadGoogleMaps();
-        
-        const mapInstance = new google.maps.Map(mapRef.current!, {
-          center,
-          zoom,
-          restriction: {
-            latLngBounds: KENYA_BOUNDS,
-            strictBounds: false,
-          },
-          mapTypeControl: true,
-          streetViewControl: true,
-          fullscreenControl: true,
-          zoomControl: true,
-          styles: [
-            {
-              featureType: 'poi',
-              elementType: 'labels',
-              stylers: [{ visibility: 'off' }]
-            }
-          ]
-        });
+    console.log('Initializing Google Maps with window.google...');
 
-        setMap(mapInstance);
+    try {
+      const mapInstance = new google.maps.Map(mapRef.current, {
+        center: center || KENYA_CITIES.Nairobi,
+        zoom: zoom || 10,
+        restriction: {
+          latLngBounds: KENYA_BOUNDS,
+          strictBounds: false,
+        },
+        mapTypeControl: true,
+        streetViewControl: true,
+        fullscreenControl: true,
+        zoomControl: true,
+      });
 
-        // Initialize info window
-        const infoWindowInstance = new google.maps.InfoWindow();
-        setInfoWindow(infoWindowInstance);
+      console.log('Map instance created successfully');
+      setMap(mapInstance);
 
-        // Initialize search box if enabled
-        if (showSearch) {
-          const searchInput = document.getElementById('map-search') as HTMLInputElement;
-          if (searchInput) {
-            const searchBoxInstance = new google.maps.places.SearchBox(searchInput);
-            setSearchBox(searchBoxInstance);
+      const infoWindowInstance = new google.maps.InfoWindow();
+      setInfoWindow(infoWindowInstance);
+      console.log('Info window created successfully');
 
-            // Bias search results to Kenya
-            mapInstance.addListener('bounds_changed', () => {
-              searchBoxInstance.setBounds(mapInstance.getBounds()!);
-            });
+      // Initialize search functionality if enabled
+      if (showSearch) {
+        const searchInput = document.getElementById('map-search') as HTMLInputElement;
+        if (searchInput) {
+          const searchBox = new google.maps.places.SearchBox(searchInput);
+          
+          // Bias the SearchBox results towards current map's viewport
+          mapInstance.addListener('bounds_changed', () => {
+            searchBox.setBounds(mapInstance.getBounds()!);
+          });
 
-            // Handle place selection
-            searchBoxInstance.addListener('places_changed', () => {
-              const places = searchBoxInstance.getPlaces();
-              if (!places || places.length === 0) return;
+          searchBox.addListener('places_changed', () => {
+            const places = searchBox.getPlaces();
+            if (!places || places.length === 0) return;
 
-              const place = places[0];
-              if (!place.geometry || !place.geometry.location) return;
+            const place = places[0];
+            if (!place.geometry || !place.geometry.location) return;
 
-              mapInstance.setCenter(place.geometry.location);
-              mapInstance.setZoom(12);
-            });
-          }
+            mapInstance.setCenter(place.geometry.location);
+            mapInstance.setZoom(12);
+          });
         }
-
-      } catch (error) {
-        console.error('Failed to initialize Google Maps:', error);
       }
-    };
 
-    initMap();
+    } catch (error) {
+      console.error('Failed to initialize Google Maps:', error);
+    }
   }, [center, zoom, showSearch]);
 
   // Create property markers with clustering
@@ -314,11 +302,20 @@ export default function GoogleMap({
 }: GoogleMapProps) {
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
 
+  console.log('GoogleMap component rendering with:', {
+    apiKey: apiKey ? 'Present' : 'Missing',
+    propertiesCount: properties.length,
+    center,
+    zoom,
+    height
+  });
+
   if (!apiKey) {
+    console.error('Google Maps API key is missing');
     return (
       <div className={`flex items-center justify-center bg-gray-100 rounded-lg ${className}`} style={{ height }}>
         <div className="text-center p-6">
-          <p className="text-gray-600 mb-2">Google Maps API key not configured</p>
+          <p className="text-red-600 mb-2">Google Maps API key not configured</p>
           <p className="text-sm text-gray-500">
             Please add NEXT_PUBLIC_GOOGLE_MAPS_API_KEY to your environment variables
           </p>
@@ -328,6 +325,8 @@ export default function GoogleMap({
   }
 
   const render = (status: string) => {
+    console.log('Google Maps render status:', status);
+    
     if (status === 'LOADING') {
       return (
         <div className={`flex items-center justify-center bg-gray-100 rounded-lg ${className}`} style={{ height }}>
@@ -340,13 +339,29 @@ export default function GoogleMap({
     }
 
     if (status === 'FAILURE') {
+      console.error('Google Maps failed to load');
       return (
         <div className={`flex items-center justify-center bg-gray-100 rounded-lg ${className}`} style={{ height }}>
           <div className="text-center p-6">
             <p className="text-red-600 mb-2">Failed to load Google Maps</p>
             <p className="text-sm text-gray-500">Please check your internet connection and API key</p>
+            <p className="text-xs text-gray-400 mt-2">API Key: {apiKey ? 'Present' : 'Missing'}</p>
           </div>
         </div>
+      );
+    }
+
+    if (status === 'SUCCESS') {
+      console.log('Google Maps loaded successfully');
+      return (
+        <MapComponent
+          properties={properties}
+          center={center}
+          zoom={zoom}
+          onPropertySelect={onPropertySelect}
+          selectedProperty={selectedProperty}
+          showSearch={showSearch}
+        />
       );
     }
 

@@ -7,17 +7,20 @@ import {
   EnvelopeIcon, 
   StarIcon,
   BuildingOfficeIcon,
-  GlobeAltIcon
+  GlobeAltIcon,
+  LockClosedIcon
 } from '@heroicons/react/24/outline'
 import { StarIcon as StarSolidIcon } from '@heroicons/react/24/solid'
 import { Card, CardContent } from '@/components/ui/Card'
 import { Agent } from '@/types'
+import { useAuth } from '@/lib/auth'
 
 interface AgentCardProps {
   agent: Agent
 }
 
 const AgentCard: React.FC<AgentCardProps> = ({ agent }) => {
+  const { isAuthenticated, hasHydrated } = useAuth()
   const {
     id,
     name,
@@ -33,6 +36,9 @@ const AgentCard: React.FC<AgentCardProps> = ({ agent }) => {
     phone,
     email
   } = agent
+
+  // Prevent hydration mismatch by not showing auth-dependent content until hydrated
+  const showAuthContent = hasHydrated && isAuthenticated
 
   const renderStars = (rating: number) => {
     const stars = []
@@ -148,31 +154,51 @@ const AgentCard: React.FC<AgentCardProps> = ({ agent }) => {
             <span className="font-medium text-gray-900">{company.name}</span>
           </div>
           
-          <div className="space-y-1 text-sm text-gray-600">
-            <div className="flex items-center">
-              <MapPinIcon className="h-4 w-4 text-gray-400 mr-2" />
-              <span>{company.location}</span>
-            </div>
-            
-            <div className="flex items-center">
-              <PhoneIcon className="h-4 w-4 text-gray-400 mr-2" />
-              <span>{company.phone}</span>
-            </div>
-            
-            {company.website && (
+          {showAuthContent ? (
+            <div className="space-y-1 text-sm text-gray-600">
               <div className="flex items-center">
-                <GlobeAltIcon className="h-4 w-4 text-gray-400 mr-2" />
-                <a 
-                  href={company.website} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="text-green-600 hover:text-green-800 transition-colors"
-                >
-                  Visit Website
-                </a>
+                <MapPinIcon className="h-4 w-4 text-gray-400 mr-2" />
+                <span>{company.location}</span>
               </div>
-            )}
-          </div>
+              
+              <div className="flex items-center">
+                <PhoneIcon className="h-4 w-4 text-gray-400 mr-2" />
+                <span>{company.phone}</span>
+              </div>
+              
+              {company.website && (
+                <div className="flex items-center">
+                  <GlobeAltIcon className="h-4 w-4 text-gray-400 mr-2" />
+                  <a 
+                    href={company.website} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-green-600 hover:text-green-800 transition-colors"
+                  >
+                    Visit Website
+                  </a>
+                </div>
+              )}
+            </div>
+          ) : hasHydrated ? (
+            <div className="bg-gray-50 rounded-lg p-3 text-center">
+              <LockClosedIcon className="h-5 w-5 text-gray-400 mx-auto mb-2" />
+              <p className="text-sm text-gray-600 mb-2">Contact information available to logged-in users</p>
+              <Link
+                href="/auth/login"
+                className="text-green-600 hover:text-green-800 text-sm font-medium"
+              >
+                Sign in to view details
+              </Link>
+            </div>
+          ) : (
+            <div className="bg-gray-50 rounded-lg p-3 text-center">
+              <div className="animate-pulse">
+                <div className="h-4 bg-gray-200 rounded w-3/4 mx-auto mb-2"></div>
+                <div className="h-3 bg-gray-200 rounded w-1/2 mx-auto"></div>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Action Buttons */}
@@ -183,12 +209,27 @@ const AgentCard: React.FC<AgentCardProps> = ({ agent }) => {
           >
             View Properties
           </Link>
-          <a
-            href={`tel:${phone}`}
-            className="flex-1 bg-gray-100 text-gray-700 text-center py-2 px-4 rounded-md text-sm font-medium hover:bg-gray-200 transition-colors"
-          >
-            Call Now
-          </a>
+          {showAuthContent ? (
+            <a
+              href={`tel:${phone}`}
+              className="flex-1 bg-gray-100 text-gray-700 text-center py-2 px-4 rounded-md text-sm font-medium hover:bg-gray-200 transition-colors"
+            >
+              Call Now
+            </a>
+          ) : hasHydrated ? (
+            <Link
+              href="/auth/login"
+              className="flex-1 bg-gray-100 text-gray-700 text-center py-2 px-4 rounded-md text-sm font-medium hover:bg-gray-200 transition-colors"
+            >
+              Sign in to Call
+            </Link>
+          ) : (
+            <div className="flex-1 bg-gray-100 text-gray-700 text-center py-2 px-4 rounded-md text-sm font-medium">
+              <div className="animate-pulse">
+                <div className="h-4 bg-gray-200 rounded w-16 mx-auto"></div>
+              </div>
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>

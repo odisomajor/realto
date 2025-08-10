@@ -80,7 +80,7 @@ export const authApi = {
     api.post('/auth/2fa/verify', data),
   disableTwoFactor: (code: string) => api.post('/auth/2fa/disable', { code }),
   generateBackupCodes: () => api.post('/auth/2fa/backup-codes'),
-  changePassword: (data: { currentPassword: string; newPassword: string }) =>
+  changePassword: (data: { currentPassword: string; newPassword: string; confirmPassword: string }) =>
     api.post('/auth/change-password', data),
 }
 

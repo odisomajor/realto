@@ -18,11 +18,7 @@ async function main() {
       role: 'AGENT',
       password: hashedPassword,
       emailVerified: true,
-      bio: 'Experienced real estate agent specializing in Nairobi properties',
-      city: 'Nairobi',
-      county: 'Nairobi',
-      licenseNumber: 'REA001',
-      yearsExperience: 5
+      bio: 'Experienced real estate agent specializing in Nairobi properties'
     }
   });
 
@@ -35,11 +31,7 @@ async function main() {
       role: 'AGENT',
       password: hashedPassword,
       emailVerified: true,
-      bio: 'Coastal properties specialist with 8 years experience',
-      city: 'Mombasa',
-      county: 'Mombasa',
-      licenseNumber: 'REA002',
-      yearsExperience: 8
+      bio: 'Coastal properties specialist with 8 years experience'
     }
   });
 
@@ -51,9 +43,7 @@ async function main() {
       phone: '+254734567890',
       role: 'USER',
       password: hashedPassword,
-      emailVerified: true,
-      city: 'Nairobi',
-      county: 'Nairobi'
+      emailVerified: true
     }
   });
 

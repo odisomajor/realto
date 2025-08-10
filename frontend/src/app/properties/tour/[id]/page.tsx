@@ -44,7 +44,7 @@ export default function PropertyTourPage() {
       setLoading(true)
       setError(null)
       const response = await propertyApi.getProperty(propertyId)
-      setProperty(response.data)
+      setProperty(response.data.data)
     } catch (error) {
       console.error('Error fetching property:', error)
       setError('Failed to load property details')

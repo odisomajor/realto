@@ -19,6 +19,6 @@ router.post('/login', validate(loginSchema), login);
 // Protected routes
 router.get('/profile', authenticateToken, getProfile);
 router.put('/profile', authenticateToken, updateProfile);
-router.put('/change-password', authenticateToken, changePassword);
+router.post('/change-password', authenticateToken, changePassword);
 
 module.exports = router;

@@ -21,9 +21,17 @@ import {
 } from 'lucide-react';
 
 interface PropertyFiltersProps {
-  onFiltersChange: (filters: PropertyFilters) => void;
-  initialFilters?: Partial<PropertyFilters>;
-  className?: string;
+  filters: {
+    type: 'all' | 'sale' | 'rent' | 'upcoming';
+    category: 'all' | 'residential' | 'commercial' | 'land';
+    priceRange: [number, number];
+    bedrooms: number;
+    bathrooms: number;
+    area: [number, number];
+    location: string;
+    features: string[];
+  };
+  onFiltersChange: (filters: any) => void;
 }
 
 export interface PropertyFilters {
@@ -172,6 +180,13 @@ export default function PropertyFilters({ onFiltersChange, initialFilters, class
             For Rent
           </Button>
           <Button
+            variant={filters.type === 'upcoming' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => handleFilterChange('type', filters.type === 'upcoming' ? 'all' : 'upcoming')}
+          >
+            Upcoming Projects
+          </Button>
+          <Button
             variant={filters.category === 'residential' ? 'default' : 'outline'}
             size="sm"
             onClick={() => handleFilterChange('category', filters.category === 'residential' ? 'all' : 'residential')}
@@ -184,6 +199,13 @@ export default function PropertyFilters({ onFiltersChange, initialFilters, class
             onClick={() => handleFilterChange('category', filters.category === 'commercial' ? 'all' : 'commercial')}
           >
             Commercial
+          </Button>
+          <Button
+            variant={filters.category === 'land' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => handleFilterChange('category', filters.category === 'land' ? 'all' : 'land')}
+          >
+            Land
           </Button>
         </div>
 

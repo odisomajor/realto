@@ -121,21 +121,49 @@ const getProperties = async (req, res) => {
       prisma.property.count({ where })
     ]);
 
-    // Parse JSON fields
+    // Parse JSON fields and format for frontend compatibility
     const formattedProperties = properties.map(property => ({
       ...property,
+      // Map backend fields to frontend expectations
+      type: property.listingType === 'FOR_SALE' ? 'sale' : 'rent',
+      location: `${property.address}, ${property.city}, ${property.county}`.replace(/^, |, $/g, ''),
+      area: property.squareFootage,
+      agent: {
+        id: property.owner.id,
+        name: `${property.owner.firstName} ${property.owner.lastName}`,
+        email: property.owner.email,
+        phone: property.owner.phone,
+        avatar: property.owner.avatar
+      },
+      category: property.propertyType?.toLowerCase() || 'residential',
+      status: property.status?.toLowerCase() || 'available',
+      coordinates: property.latitude && property.longitude ? {
+        lat: property.latitude,
+        lng: property.longitude
+      } : undefined,
       features: property.features ? JSON.parse(property.features) : [],
       amenities: property.amenities ? JSON.parse(property.amenities) : [],
-      images: property.images ? JSON.parse(property.images) : []
+      images: property.images ? JSON.parse(property.images) : [],
+      // Remove backend-specific fields that frontend doesn't need
+      listingType: undefined,
+      propertyType: undefined,
+      address: undefined,
+      city: undefined,
+      county: undefined,
+      squareFootage: undefined,
+      owner: undefined,
+      latitude: undefined,
+      longitude: undefined
     }));
 
     res.json({
-      properties: formattedProperties,
+      success: true,
+      data: formattedProperties,
       pagination: {
-        page,
-        limit,
+        page: parseInt(page),
+        limit: parseInt(limit),
         total,
-        pages: Math.ceil(total / limit)
+        totalPages: Math.ceil(total / limit)
       }
     });
   } catch (error) {
@@ -166,9 +194,7 @@ const getProperty = async (req, res) => {
             phone: true,
             avatar: true,
             role: true,
-            bio: true,
-            licenseNumber: true,
-            yearsExperience: true
+            bio: true
           }
         },
         _count: {
@@ -190,15 +216,45 @@ const getProperty = async (req, res) => {
       data: { views: { increment: 1 } }
     });
 
-    // Parse JSON fields
+    // Parse JSON fields and format for frontend compatibility
     const formattedProperty = {
       ...property,
+      // Map backend fields to frontend expectations
+      type: property.listingType === 'FOR_SALE' ? 'sale' : 'rent',
+      location: `${property.address}, ${property.city}, ${property.county}`.replace(/^, |, $/g, ''),
+      area: property.squareFootage,
+      agent: {
+        id: property.owner.id,
+        name: `${property.owner.firstName} ${property.owner.lastName}`,
+        email: property.owner.email,
+        phone: property.owner.phone,
+        avatar: property.owner.avatar
+      },
+      category: property.propertyType?.toLowerCase() || 'residential',
+      status: property.status?.toLowerCase() || 'available',
+      coordinates: property.latitude && property.longitude ? {
+        lat: property.latitude,
+        lng: property.longitude
+      } : undefined,
       features: property.features ? JSON.parse(property.features) : [],
       amenities: property.amenities ? JSON.parse(property.amenities) : [],
-      images: property.images ? JSON.parse(property.images) : []
+      images: property.images ? JSON.parse(property.images) : [],
+      // Remove backend-specific fields that frontend doesn't need
+      listingType: undefined,
+      propertyType: undefined,
+      address: undefined,
+      city: undefined,
+      county: undefined,
+      squareFootage: undefined,
+      owner: undefined,
+      latitude: undefined,
+      longitude: undefined
     };
 
-    res.json({ property: formattedProperty });
+    res.json({ 
+      success: true,
+      data: formattedProperty 
+    });
   } catch (error) {
     console.error('Get property error:', error);
     res.status(500).json({ error: 'Internal server error' });
@@ -299,17 +355,46 @@ const createProperty = async (req, res) => {
       }
     });
 
-    // Parse JSON fields for response
+    // Format property to match frontend expectations
     const formattedProperty = {
-      ...property,
+      id: property.id,
+      title: property.title,
+      description: property.description,
+      price: property.price,
+      location: `${property.address}, ${property.city}, ${property.county}`,
+      bedrooms: property.bedrooms,
+      bathrooms: property.bathrooms,
+      area: property.squareFootage,
+      type: property.listingType,
+      category: property.propertyType,
+      status: property.status,
+      images: property.images ? JSON.parse(property.images) : [],
       features: property.features ? JSON.parse(property.features) : [],
+      coordinates: property.latitude && property.longitude ? {
+        lat: property.latitude,
+        lng: property.longitude
+      } : null,
+      agent: {
+        id: property.owner.id,
+        name: `${property.owner.firstName} ${property.owner.lastName}`,
+        email: property.owner.email,
+        phone: property.owner.phone,
+        avatar: property.owner.avatar,
+        role: property.owner.role
+      },
+      createdAt: property.createdAt,
+      updatedAt: property.updatedAt,
+      featured: property.featured || false,
       amenities: property.amenities ? JSON.parse(property.amenities) : [],
-      images: property.images ? JSON.parse(property.images) : []
+      yearBuilt: property.yearBuilt,
+      virtualTour: property.virtualTour,
+      slug: property.slug
     };
 
     res.status(201).json({
+      success: true,
       message: 'Property created successfully',
-      property: formattedProperty
+      data: formattedProperty
     });
   } catch (error) {
     console.error('Create property error:', error);
@@ -402,17 +487,46 @@ const updateProperty = async (req, res) => {
       }
     });
 
-    // Parse JSON fields for response
+    // Format property to match frontend expectations
     const formattedProperty = {
-      ...property,
+      id: property.id,
+      title: property.title,
+      description: property.description,
+      price: property.price,
+      location: `${property.address}, ${property.city}, ${property.county}`,
+      bedrooms: property.bedrooms,
+      bathrooms: property.bathrooms,
+      area: property.squareFootage,
+      type: property.listingType,
+      category: property.propertyType,
+      status: property.status,
+      images: property.images ? JSON.parse(property.images) : [],
       features: property.features ? JSON.parse(property.features) : [],
+      coordinates: property.latitude && property.longitude ? {
+        lat: property.latitude,
+        lng: property.longitude
+      } : null,
+      agent: {
+        id: property.owner.id,
+        name: `${property.owner.firstName} ${property.owner.lastName}`,
+        email: property.owner.email,
+        phone: property.owner.phone,
+        avatar: property.owner.avatar,
+        role: property.owner.role
+      },
+      createdAt: property.createdAt,
+      updatedAt: property.updatedAt,
+      featured: property.featured || false,
       amenities: property.amenities ? JSON.parse(property.amenities) : [],
-      images: property.images ? JSON.parse(property.images) : []
+      yearBuilt: property.yearBuilt,
+      virtualTour: property.virtualTour,
+      slug: property.slug
     };
 
     res.json({
+      success: true,
       message: 'Property updated successfully',
-      property: formattedProperty
+      data: formattedProperty
     });
   } catch (error) {
     console.error('Update property error:', error);
@@ -463,6 +577,17 @@ const getUserProperties = async (req, res) => {
         take: parseInt(limit),
         orderBy: { createdAt: 'desc' },
         include: {
+          owner: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              email: true,
+              phone: true,
+              avatar: true,
+              role: true
+            }
+          },
           _count: {
             select: {
               favorites: true,
@@ -474,16 +599,46 @@ const getUserProperties = async (req, res) => {
       prisma.property.count({ where: { ownerId: req.user.id } })
     ]);
 
-    // Parse JSON fields
+    // Format properties to match frontend expectations
     const formattedProperties = properties.map(property => ({
-      ...property,
+      id: property.id,
+      title: property.title,
+      description: property.description,
+      price: property.price,
+      location: `${property.address}, ${property.city}, ${property.county}`,
+      bedrooms: property.bedrooms,
+      bathrooms: property.bathrooms,
+      area: property.squareFootage,
+      type: property.listingType,
+      category: property.propertyType,
+      status: property.status,
+      images: property.images ? JSON.parse(property.images) : [],
       features: property.features ? JSON.parse(property.features) : [],
+      coordinates: property.latitude && property.longitude ? {
+        lat: property.latitude,
+        lng: property.longitude
+      } : null,
+      agent: {
+        id: property.owner.id,
+        name: `${property.owner.firstName} ${property.owner.lastName}`,
+        email: property.owner.email,
+        phone: property.owner.phone,
+        avatar: property.owner.avatar,
+        role: property.owner.role
+      },
+      createdAt: property.createdAt,
+      updatedAt: property.updatedAt,
+      featured: property.featured || false,
       amenities: property.amenities ? JSON.parse(property.amenities) : [],
-      images: property.images ? JSON.parse(property.images) : []
+      yearBuilt: property.yearBuilt,
+      virtualTour: property.virtualTour,
+      slug: property.slug,
+      _count: property._count
     }));
 
     res.json({
-      properties: formattedProperties,
+      success: true,
+      data: formattedProperties,
       pagination: {
         page: parseInt(page),
         limit: parseInt(limit),

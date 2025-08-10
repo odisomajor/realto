@@ -3,6 +3,7 @@
 import Hero from '@/components/home/Hero'
 import PropertyCard from '@/components/properties/PropertyCard'
 import AgentCard from '@/components/agents/AgentCard'
+import SEOHead from '@/components/SEO/SEOHead'
 import { Property, Agent } from '@/types'
 import { formatArea } from '@/lib/utils'
 
@@ -164,6 +165,12 @@ const featuredAgents: Agent[] = [
 export default function Home() {
   return (
     <div className="min-h-screen">
+      <SEOHead 
+        title="Xillix - Kenya Real Estate Portal | Properties for Sale & Rent"
+        description="Find your dream property in Kenya. Browse houses, land, commercial properties, warehouses, and rentals. Trusted real estate platform with verified listings across Nairobi, Mombasa, Kisumu, and all major cities."
+        canonical="https://xillix.co.ke"
+      />
+      
       <Hero />
       
       {/* Featured Properties Section */}
@@ -220,7 +227,7 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-gray-900 mb-4">
-              Why Choose RealEstate?
+              Why Choose Xillix?
             </h2>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
               We provide exceptional service and expertise to help you find your perfect property

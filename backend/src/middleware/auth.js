@@ -12,19 +12,26 @@ const authenticateToken = async (req, res, next) => {
   }
 
   try {
-    // For testing purposes, accept any token
-    // In production, we would verify the token with jwt.verify
-    // const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    // Verify the JWT token
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
     
-    // Mock user for testing
-    const user = {
-      id: '123456',
-      email: 'user@example.com',
-      firstName: 'John',
-      lastName: 'Doe',
-      role: 'USER',
-      isActive: true
-    };
+    // Get user from database
+    const user = await prisma.user.findUnique({
+      where: { id: decoded.userId },
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        role: true,
+        emailVerified: true,
+        phoneVerified: true
+      }
+    });
+
+    if (!user) {
+      return res.status(403).json({ error: 'User not found' });
+    }
 
     req.user = user;
     next();

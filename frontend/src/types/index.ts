@@ -33,9 +33,9 @@ export interface Property {
   bedrooms: number
   bathrooms: number
   area: number
-  type: 'sale' | 'rent'
+  type: 'sale' | 'rent' | 'upcoming'
   category: 'residential' | 'commercial' | 'land'
-  status: 'available' | 'sold' | 'rented' | 'pending'
+  status: 'available' | 'sold' | 'rented' | 'pending' | 'under-construction'
   images: string[]
   features: string[]
   coordinates?: {
@@ -75,7 +75,7 @@ export interface AuthState {
 }
 
 export interface SearchFilters {
-  type?: 'sale' | 'rent'
+  type?: 'sale' | 'rent' | 'upcoming'
   category?: 'residential' | 'commercial' | 'land'
   location?: string
   minPrice?: number
@@ -114,7 +114,7 @@ export interface PropertyFormData {
   bedrooms: number
   bathrooms: number
   area: number
-  type: 'sale' | 'rent'
+  type: 'sale' | 'rent' | 'upcoming'
   category: 'residential' | 'commercial' | 'land'
   features: string[]
   images: File[]
