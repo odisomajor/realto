@@ -58,7 +58,7 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      const result = await login(formData);
+      const result = await login(formData.email, formData.password);
       
       // Check if 2FA is required
       if (result?.requires2FA) {
@@ -174,18 +174,21 @@ export default function LoginPage() {
                   </div>
                 )}
 
-                <Input
-                  label="Verification Code"
-                  type="text"
-                  name="twoFactorCode"
-                  value={twoFactorCode}
-                  onChange={(e) => setTwoFactorCode(e.target.value)}
-                  error={errors.twoFactor}
-                  required
-                  placeholder="Enter 6-digit code"
-                  maxLength={6}
-                  className="text-center text-2xl tracking-widest"
-                />
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Verification Code
+                  </label>
+                  <Input
+                    type="text"
+                    name="twoFactorCode"
+                    value={twoFactorCode}
+                    onChange={(e) => setTwoFactorCode(e.target.value)}
+                    required
+                    placeholder="Enter 6-digit code"
+                    maxLength={6}
+                    className="text-center text-2xl tracking-widest"
+                  />
+                </div>
 
                 <Button
                   type="submit"
@@ -243,28 +246,34 @@ export default function LoginPage() {
                 </div>
               )}
 
-              <Input
-                label="Email address"
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                error={errors.email}
-                required
-                placeholder="john@example.com"
-              />
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Email address
+                </label>
+                <Input
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  required
+                  placeholder="Enter your email"
+                />
+              </div>
 
               <div className="relative">
-                <Input
-                  label="Password"
-                  type={showPassword ? 'text' : 'password'}
-                  name="password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  error={errors.password}
-                  required
-                  placeholder="Enter your password"
-                />
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Password
+                  </label>
+                  <Input
+                    type={showPassword ? 'text' : 'password'}
+                    name="password"
+                    value={formData.password}
+                    onChange={handleChange}
+                    required
+                    placeholder="Enter your password"
+                  />
+                </div>
                 <button
                   type="button"
                   className="absolute inset-y-0 right-0 top-6 pr-3 flex items-center"

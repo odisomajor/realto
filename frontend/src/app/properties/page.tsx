@@ -22,12 +22,13 @@ import {
   Heart, 
   Share2, 
   Eye,
-  Bell
+  Bell,
+  Calendar
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 interface Property {
-  _id: string;
+  id: string;
   title: string;
   description: string;
   price: number;
@@ -37,16 +38,20 @@ interface Property {
   bedrooms: number;
   bathrooms: number;
   area: number;
-  propertyType: 'sale' | 'rent';
-  category: string;
+  type: 'sale' | 'rent';
+  category: 'residential' | 'commercial' | 'land';
+  status: 'available' | 'sold' | 'rented' | 'pending';
   features: string[];
   images: string[];
   agent: {
+    id: string;
     name: string;
     phone: string;
     email: string;
+    avatar?: string;
   };
   createdAt: string;
+  updatedAt: string;
   distance?: number; // Added for distance-based sorting
 }
 
@@ -57,7 +62,22 @@ export default function PropertiesPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
-  const [currentFilters, setCurrentFilters] = useState<PropertyFiltersType>({});
+  const [currentFilters, setCurrentFilters] = useState<PropertyFiltersType>({
+    search: '',
+    type: 'all',
+    category: 'all',
+    priceMin: '',
+    priceMax: '',
+    bedrooms: '',
+    bathrooms: '',
+    areaMin: '',
+    areaMax: '',
+    location: '',
+    county: '',
+    features: [],
+    sortBy: 'newest',
+    radius: '10'
+  });
 
   useEffect(() => {
     fetchProperties();
@@ -95,42 +115,60 @@ export default function PropertiesPage() {
       }
 
       // Property type filter
-      if (filters.type) {
-        filtered = filtered.filter(property => property.propertyType === filters.type);
+      if (filters.type && filters.type !== 'all') {
+        filtered = filtered.filter(property => property.type === filters.type);
       }
 
       // Category filter
-      if (filters.category) {
+      if (filters.category && filters.category !== 'all') {
         filtered = filtered.filter(property => property.category === filters.category);
       }
 
       // Price filters
-      if (filters.priceRange) {
-        if (filters.priceRange.min !== undefined) {
-          filtered = filtered.filter(property => property.price >= filters.priceRange!.min!);
+      if (filters.priceMin || filters.priceMax) {
+        if (filters.priceMin) {
+          const minPrice = parseFloat(filters.priceMin);
+          if (!isNaN(minPrice)) {
+            filtered = filtered.filter(property => property.price >= minPrice);
+          }
         }
-        if (filters.priceRange.max !== undefined) {
-          filtered = filtered.filter(property => property.price <= filters.priceRange!.max!);
+        if (filters.priceMax) {
+          const maxPrice = parseFloat(filters.priceMax);
+          if (!isNaN(maxPrice)) {
+            filtered = filtered.filter(property => property.price <= maxPrice);
+          }
         }
       }
 
       // Bedroom filter
       if (filters.bedrooms) {
-        filtered = filtered.filter(property => property.bedrooms >= filters.bedrooms!);
+        const bedroomCount = parseInt(filters.bedrooms);
+        if (!isNaN(bedroomCount)) {
+          filtered = filtered.filter(property => property.bedrooms >= bedroomCount);
+        }
       }
 
       // Bathroom filter
       if (filters.bathrooms) {
-        filtered = filtered.filter(property => property.bathrooms >= filters.bathrooms!);
+        const bathroomCount = parseInt(filters.bathrooms);
+        if (!isNaN(bathroomCount)) {
+          filtered = filtered.filter(property => property.bathrooms >= bathroomCount);
+        }
       }
 
       // Area filter
-      if (filters.areaRange) {
-        if (filters.areaRange.min !== undefined) {
-          filtered = filtered.filter(property => property.area >= filters.areaRange!.min!);
+      if (filters.areaMin || filters.areaMax) {
+        if (filters.areaMin) {
+          const minArea = parseFloat(filters.areaMin);
+          if (!isNaN(minArea)) {
+            filtered = filtered.filter(property => property.area >= minArea);
+          }
         }
-        if (filters.areaRange.max !== undefined) {
-          filtered = filtered.filter(property => property.area <= filters.areaRange!.max!);
+        if (filters.areaMax) {
+          const maxArea = parseFloat(filters.areaMax);
+          if (!isNaN(maxArea)) {
+            filtered = filtered.filter(property => property.area <= maxArea);
+          }
         }
       }
 
@@ -149,34 +187,11 @@ export default function PropertiesPage() {
       }
 
       // Location-based filtering with radius
-      if (filters.location && filters.location.coordinates) {
-        const propertiesWithDistance = await Promise.all(
-          filtered.map(async (property) => {
-            if (property.latitude && property.longitude) {
-              try {
-                const response = await geocodingApi.calculateDistance(
-                  filters.location!.coordinates!.lat,
-                  filters.location!.coordinates!.lng,
-                  property.latitude,
-                  property.longitude
-                );
-                
-                if (response.data.success) {
-                  const distance = response.data.data.distance;
-                  return { ...property, distance };
-                }
-              } catch (error) {
-                console.error('Distance calculation error:', error);
-              }
-            }
-            return { ...property, distance: Infinity };
-          })
-        );
-
-        // Use default radius of 10km if not specified
-        const radius = 10; // Default radius
-        filtered = propertiesWithDistance.filter(property => 
-          property.distance !== undefined && property.distance <= radius
+      if (filters.location && filters.location.trim()) {
+        // For now, just filter by location string match
+        // In a real app, you'd use coordinates and radius
+        filtered = filtered.filter(property => 
+          property.location.toLowerCase().includes(filters.location.toLowerCase())
         );
       }
 
@@ -184,16 +199,18 @@ export default function PropertiesPage() {
       if (filters.sortBy) {
         filtered.sort((a, b) => {
           switch (filters.sortBy) {
-            case 'price_asc':
+            case 'price-low':
               return a.price - b.price;
-            case 'price_desc':
+            case 'price-high':
               return b.price - a.price;
-            case 'date_asc':
+            case 'oldest':
               return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
-            case 'date_desc':
+            case 'newest':
               return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-            case 'distance':
-              return (a.distance || Infinity) - (b.distance || Infinity);
+            case 'area-large':
+              return b.area - a.area;
+            case 'area-small':
+              return a.area - b.area;
             default:
               return 0;
           }
@@ -295,9 +312,9 @@ export default function PropertiesPage() {
           <div className="flex items-center gap-4">
             <span className="text-gray-600">
               {filteredProperties.length} properties found
-              {currentFilters.location && currentFilters.location.coordinates && (
+              {currentFilters.location && (
                 <span className="text-sm text-gray-500 ml-2">
-                  within 10km of {currentFilters.location.name}
+                  in {currentFilters.location}
                 </span>
               )}
             </span>
@@ -333,7 +350,7 @@ export default function PropertiesPage() {
         {viewMode === 'list' ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredProperties.map((property) => (
-              <div key={property._id} className="relative">
+              <div key={property.id} className="relative">
                 <PropertyCard property={property} />
                 {property.distance !== undefined && property.distance < Infinity && (
                   <div className="absolute top-2 right-2 bg-green-600 text-white text-xs px-2 py-1 rounded-full">
@@ -349,7 +366,7 @@ export default function PropertiesPage() {
               properties={filteredProperties}
               height="600px"
               showSearch={false}
-              center={currentFilters.location?.coordinates}
+              center={undefined}
             />
           </div>
         )}
@@ -357,7 +374,22 @@ export default function PropertiesPage() {
         {filteredProperties.length === 0 && (
           <div className="text-center py-12">
             <p className="text-gray-500 text-lg">No properties found matching your criteria.</p>
-            <Button onClick={() => handleSearch({})} className="mt-4">
+            <Button onClick={() => handleSearch({
+              search: '',
+              type: 'all',
+              category: 'all',
+              priceMin: '',
+              priceMax: '',
+              bedrooms: '',
+              bathrooms: '',
+              areaMin: '',
+              areaMax: '',
+              location: '',
+              county: '',
+              features: [],
+              sortBy: 'newest',
+              radius: '10'
+            })} className="mt-4">
               Clear Filters
             </Button>
           </div>

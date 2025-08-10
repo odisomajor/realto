@@ -95,7 +95,7 @@ export function PropertyTours({
     date: '',
     time: '',
     duration: 60,
-    attendees: [{ name: '', email: '', phone: '', role: 'buyer' as const }],
+    attendees: [{ id: '', name: '', email: '', phone: '', role: 'buyer' as const }],
     notes: '',
     requirements: [] as string[]
   })
@@ -122,15 +122,25 @@ export function PropertyTours({
           property: {
             id: '1',
             title: 'Modern Downtown Apartment',
+            description: 'A beautiful modern apartment in the heart of downtown',
             price: 850000,
             location: 'Downtown, City Center',
             bedrooms: 2,
             bathrooms: 2,
             area: 1200,
             type: 'sale',
-            category: 'apartment',
+            category: 'residential',
             status: 'available',
-            images: ['/api/placeholder/400/300']
+            images: ['/api/placeholder/400/300'],
+            features: ['Modern Kitchen', 'Balcony', 'Parking'],
+            agent: {
+              id: 'agent1',
+              name: 'Sarah Johnson',
+              email: 'sarah@realestate.com',
+              phone: '+254700000002'
+            },
+            createdAt: '2024-01-01T00:00:00Z',
+            updatedAt: '2024-01-01T00:00:00Z'
           },
           type: 'virtual',
           date: '2024-01-25',
@@ -162,15 +172,25 @@ export function PropertyTours({
           property: {
             id: '2',
             title: 'Luxury Villa with Pool',
+            description: 'A stunning luxury villa with pool and garden',
             price: 2500000,
             location: 'Beverly Hills, CA',
             bedrooms: 5,
             bathrooms: 4,
             area: 4500,
             type: 'sale',
-            category: 'villa',
+            category: 'residential',
             status: 'available',
-            images: ['/api/placeholder/400/300']
+            images: ['/api/placeholder/400/300'],
+            features: ['Pool', 'Garden', 'Garage', 'Security'],
+            agent: {
+              id: 'agent2',
+              name: 'Michael Brown',
+              email: 'michael@realestate.com',
+              phone: '+254700000004'
+            },
+            createdAt: '2024-01-01T00:00:00Z',
+            updatedAt: '2024-01-01T00:00:00Z'
           },
           type: 'physical',
           date: '2024-01-20',
@@ -235,6 +255,10 @@ export function PropertyTours({
         ...scheduleForm,
         id: Date.now().toString(),
         status: 'scheduled',
+        attendees: scheduleForm.attendees.map(attendee => ({
+          ...attendee,
+          id: attendee.id || Date.now().toString()
+        })),
         agent: {
           id: 'agent1',
           name: 'Sarah Johnson',
@@ -252,7 +276,7 @@ export function PropertyTours({
         date: '',
         time: '',
         duration: 60,
-        attendees: [{ name: '', email: '', phone: '', role: 'buyer' }],
+        attendees: [{ id: '', name: '', email: '', phone: '', role: 'buyer' }],
         notes: '',
         requirements: []
       })

@@ -1,9 +1,9 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { notFound } from 'next/navigation';
+import { notFound, useParams } from 'next/navigation';
 import { 
   MapPinIcon, 
   PhoneIcon, 
@@ -100,13 +100,9 @@ const agentProperties: Property[] = [
   }
 ];
 
-interface AgentPageProps {
-  params: {
-    id: string;
-  };
-}
-
-export default function AgentPage({ params }: AgentPageProps) {
+export default function AgentPage() {
+  const params = useParams();
+  const id = params.id as string;
   const [contactForm, setContactForm] = useState({
     name: '',
     email: '',
@@ -359,28 +355,40 @@ export default function AgentPage({ params }: AgentPageProps) {
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleContactSubmit} className="space-y-4">
-                  <Input
-                    label="Your Name"
-                    type="text"
-                    value={contactForm.name}
-                    onChange={(e) => setContactForm({ ...contactForm, name: e.target.value })}
-                    required
-                  />
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Your Name
+                    </label>
+                    <Input
+                      type="text"
+                      value={contactForm.name}
+                      onChange={(e) => setContactForm({ ...contactForm, name: e.target.value })}
+                      required
+                    />
+                  </div>
                   
-                  <Input
-                    label="Email"
-                    type="email"
-                    value={contactForm.email}
-                    onChange={(e) => setContactForm({ ...contactForm, email: e.target.value })}
-                    required
-                  />
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Email
+                    </label>
+                    <Input
+                      type="email"
+                      value={contactForm.email}
+                      onChange={(e) => setContactForm({ ...contactForm, email: e.target.value })}
+                      required
+                    />
+                  </div>
                   
-                  <Input
-                    label="Phone"
-                    type="tel"
-                    value={contactForm.phone}
-                    onChange={(e) => setContactForm({ ...contactForm, phone: e.target.value })}
-                  />
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Phone
+                    </label>
+                    <Input
+                      type="tel"
+                      value={contactForm.phone}
+                      onChange={(e) => setContactForm({ ...contactForm, phone: e.target.value })}
+                    />
+                  </div>
                   
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">

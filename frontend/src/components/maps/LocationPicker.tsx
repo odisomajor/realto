@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Wrapper } from '@googlemaps/react-wrapper';
 import { geocodingApi } from '@/lib/api';
-import { KENYA_BOUNDS, KENYA_CITIES } from '@/lib/google-maps';
+import { loadGoogleMaps, KENYA_BOUNDS, KENYA_CITIES } from '@/lib/google-maps';
 import { MapPinIcon } from '@heroicons/react/24/outline';
 
 interface LocationData {
@@ -294,7 +294,7 @@ export default function LocationPicker({
       );
     }
 
-    return null;
+    return <div />;
   };
 
   return (

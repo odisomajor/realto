@@ -108,10 +108,10 @@ function PropertyEditForm() {
     }
   };
 
-  const handleLocationSelect = (location: { lat: number; lng: number; address: string }) => {
+  const handleLocationSelect = (location: { address: string; coordinates: { lat: number; lng: number }; county?: string; city?: string }) => {
     setFormData(prev => ({
       ...prev,
-      coordinates: { lat: location.lat, lng: location.lng },
+      coordinates: location.coordinates,
       location: location.address
     }));
   };
@@ -296,13 +296,14 @@ function PropertyEditForm() {
               {/* Basic Information */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Property Title
+                  </label>
                   <Input
-                    label="Property Title"
-                    name="title"
+                    type="text"
                     value={formData.title}
-                    onChange={handleInputChange}
+                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                     required
-                    placeholder="e.g., Modern 3BR Apartment in Westlands"
                   />
                 </div>
 
@@ -321,15 +322,17 @@ function PropertyEditForm() {
                   />
                 </div>
 
-                <Input
-                  label="Price (KES)"
-                  name="price"
-                  type="number"
-                  value={formData.price}
-                  onChange={handleInputChange}
-                  required
-                  placeholder="e.g., 15000000"
-                />
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Price (KES)
+                  </label>
+                  <Input
+                    type="number"
+                    value={formData.price}
+                    onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                    required
+                  />
+                </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -383,42 +386,58 @@ function PropertyEditForm() {
 
               {/* Location and Property Details */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <Input
-                  label="Specific Location"
-                  name="location"
-                  value={formData.location}
-                  onChange={handleInputChange}
-                  placeholder="Address will be filled automatically when you select on map"
-                  readOnly
-                />
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Specific Location
+                  </label>
+                  <Input
+                    name="location"
+                    value={formData.location}
+                    onChange={handleInputChange}
+                    placeholder="Address will be filled automatically when you select on map"
+                    readOnly
+                  />
+                </div>
 
-                <Input
-                  label="Area (sq meters)"
-                  name="area"
-                  type="number"
-                  value={formData.area}
-                  onChange={handleInputChange}
-                  required
-                  placeholder="e.g., 120"
-                />
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Area (sq meters)
+                  </label>
+                  <Input
+                    name="area"
+                    type="number"
+                    value={formData.area}
+                    onChange={handleInputChange}
+                    required
+                    placeholder="e.g., 120"
+                  />
+                </div>
 
-                <Input
-                  label="Bedrooms"
-                  name="bedrooms"
-                  type="number"
-                  value={formData.bedrooms}
-                  onChange={handleInputChange}
-                  placeholder="e.g., 3"
-                />
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Bedrooms
+                  </label>
+                  <Input
+                    name="bedrooms"
+                    type="number"
+                    value={formData.bedrooms}
+                    onChange={handleInputChange}
+                    placeholder="e.g., 3"
+                  />
+                </div>
 
-                <Input
-                  label="Bathrooms"
-                  name="bathrooms"
-                  type="number"
-                  value={formData.bathrooms}
-                  onChange={handleInputChange}
-                  placeholder="e.g., 2"
-                />
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Bathrooms
+                  </label>
+                  <Input
+                    name="bathrooms"
+                    type="number"
+                    value={formData.bathrooms}
+                    onChange={handleInputChange}
+                    placeholder="e.g., 2"
+                  />
+                </div>
               </div>
 
               {/* Google Maps Location Picker */}
@@ -429,7 +448,10 @@ function PropertyEditForm() {
                 <div className="h-96 border border-gray-300 rounded-md overflow-hidden">
                   <LocationPicker
                     onLocationSelect={handleLocationSelect}
-                    initialLocation={formData.coordinates}
+                    initialLocation={formData.coordinates ? {
+                      address: formData.location,
+                      coordinates: formData.coordinates
+                    } : undefined}
                   />
                 </div>
                 {formData.coordinates && (

@@ -111,7 +111,7 @@ export default function NearbyAmenities({
                 isOpen: place.opening_hours?.open_now,
                 priceLevel: place.price_level
               }))
-              .sort((a, b) => a.distance - b.distance);
+              .sort((a: any, b: any) => a.distance - b.distance);
 
             return { category, amenities: categoryAmenities };
           } catch (error) {

@@ -143,8 +143,8 @@ export function PropertyAdvancedSearch({
     setFilters(newFilters)
   }
 
-  const handleArrayToggle = (key: keyof SearchFilters, value: string) => {
-    const currentArray = filters[key] as string[]
+  const handleArrayToggle = (key: keyof SearchFilters, value: string | number) => {
+    const currentArray = filters[key] as (string | number)[]
     const newArray = currentArray.includes(value)
       ? currentArray.filter(item => item !== value)
       : [...currentArray, value]
@@ -397,9 +397,9 @@ export function PropertyAdvancedSearch({
                 {[1, 2, 3, 4, 5].map(num => (
                   <button
                     key={num}
-                    onClick={() => handleArrayToggle('bedrooms', num.toString())}
+                    onClick={() => handleArrayToggle('bedrooms', num)}
                     className={`px-4 py-2 rounded-lg border transition-all ${
-                      filters.bedrooms.includes(num.toString())
+                      filters.bedrooms.includes(num)
                         ? 'border-blue-500 bg-blue-50 text-blue-700'
                         : 'border-gray-200 hover:border-gray-300'
                     }`}
@@ -416,9 +416,9 @@ export function PropertyAdvancedSearch({
                 {[1, 2, 3, 4, 5].map(num => (
                   <button
                     key={num}
-                    onClick={() => handleArrayToggle('bathrooms', num.toString())}
+                    onClick={() => handleArrayToggle('bathrooms', num)}
                     className={`px-4 py-2 rounded-lg border transition-all ${
-                      filters.bathrooms.includes(num.toString())
+                      filters.bathrooms.includes(num)
                         ? 'border-blue-500 bg-blue-50 text-blue-700'
                         : 'border-gray-200 hover:border-gray-300'
                     }`}

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { propertyApi } from '@/lib/api'
 import PropertyComparison from '@/components/properties/PropertyComparison'
@@ -18,7 +18,7 @@ import {
 import { Property } from '@/types'
 import Link from 'next/link'
 
-export default function PropertyComparePage() {
+function PropertyCompareContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const [comparisonProperties, setComparisonProperties] = useState<Property[]>([])
@@ -279,5 +279,19 @@ export default function PropertyComparePage() {
         </Card>
       )}
     </div>
+  )
+}
+
+export default function PropertyComparePage() {
+  return (
+    <Suspense fallback={
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
+        </div>
+      </div>
+    }>
+      <PropertyCompareContent />
+    </Suspense>
   )
 }

@@ -252,7 +252,7 @@ export default function SavedSearchesPage() {
                       <h3 className="text-lg font-semibold text-gray-900">
                         {search.name}
                       </h3>
-                      <Badge variant={search.alertsEnabled ? "success" : "secondary"}>
+                      <Badge variant={search.alertsEnabled ? "default" : "secondary"}>
                         {search.alertsEnabled ? (
                           <>
                             <Bell className="h-3 w-3 mr-1" />

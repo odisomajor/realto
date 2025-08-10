@@ -1,11 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import PropertyComparison from '@/components/properties/PropertyComparison';
 import { propertyApi } from '@/lib/api';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
+import { Property } from '@/types';
 import {
   MagnifyingGlassIcon,
   PlusIcon,
@@ -13,34 +14,7 @@ import {
   HomeIcon
 } from '@heroicons/react/24/outline';
 
-interface Property {
-  _id: string;
-  title: string;
-  description: string;
-  price: number;
-  location: string;
-  latitude?: number;
-  longitude?: number;
-  county?: string;
-  bedrooms: number;
-  bathrooms: number;
-  area: number;
-  propertyType: 'sale' | 'rent';
-  category: string;
-  features: string[];
-  images: string[];
-  agent: {
-    name: string;
-    phone: string;
-    email: string;
-  };
-  createdAt: string;
-  views?: number;
-  favorites?: number;
-  isFavorited?: boolean;
-}
-
-export default function PropertyComparisonPage() {
+function PropertyComparisonContent() {
   const searchParams = useSearchParams();
   const [comparedProperties, setComparedProperties] = useState<Property[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -100,7 +74,7 @@ export default function PropertyComparisonPage() {
       const results = response.data.data || [];
       // Filter out already compared properties
       const filteredResults = results.filter(
-        (property: Property) => !comparedProperties.some(cp => cp._id === property._id)
+        (property: Property) => !comparedProperties.some(cp => cp.id === property.id)
       );
       
       setSearchResults(filteredResults);
@@ -118,7 +92,7 @@ export default function PropertyComparisonPage() {
       return;
     }
 
-    if (comparedProperties.some(cp => cp._id === property._id)) {
+    if (comparedProperties.some(cp => cp.id === property.id)) {
       return; // Property already in comparison
     }
 
@@ -132,13 +106,13 @@ export default function PropertyComparisonPage() {
   };
 
   const removePropertyFromComparison = (propertyId: string) => {
-    const updatedProperties = comparedProperties.filter(p => p._id !== propertyId);
+    const updatedProperties = comparedProperties.filter(p => p.id !== propertyId);
     setComparedProperties(updatedProperties);
     updateURL(updatedProperties);
   };
 
   const updateURL = (properties: Property[]) => {
-    const propertyIds = properties.map(p => p._id).join(',');
+    const propertyIds = properties.map(p => p.id).join(',');
     const url = new URL(window.location.href);
     
     if (propertyIds) {
@@ -208,8 +182,9 @@ export default function PropertyComparisonPage() {
 
         {/* Comparison Component */}
         <PropertyComparison
-          initialProperties={comparedProperties}
-          maxComparisons={4}
+          properties={comparedProperties}
+          onRemoveProperty={removePropertyFromComparison}
+          onAddProperty={() => setShowSearch(true)}
         />
 
         {/* Search Modal */}
@@ -252,7 +227,7 @@ export default function PropertyComparisonPage() {
                   <div className="space-y-4">
                     {searchResults.map((property) => (
                       <div
-                        key={property._id}
+                        key={property.id}
                         className="flex items-center space-x-4 p-4 border border-gray-200 rounded-lg hover:bg-gray-50"
                       >
                         <img
@@ -342,5 +317,31 @@ export default function PropertyComparisonPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function PropertyComparisonPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-50 py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="animate-pulse">
+            <div className="h-8 bg-gray-200 rounded w-1/4 mb-4"></div>
+            <div className="h-4 bg-gray-200 rounded w-1/2 mb-8"></div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {[1, 2, 3, 4].map((i) => (
+                <div key={i} className="bg-white rounded-lg shadow-md p-6">
+                  <div className="h-48 bg-gray-200 rounded mb-4"></div>
+                  <div className="h-4 bg-gray-200 rounded mb-2"></div>
+                  <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    }>
+      <PropertyComparisonContent />
+    </Suspense>
   );
 }

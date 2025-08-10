@@ -27,7 +27,8 @@ import {
   CheckCircle,
   Clock,
   Users,
-  BarChart3
+  BarChart3,
+  Plus
 } from 'lucide-react'
 
 interface NotificationStats {

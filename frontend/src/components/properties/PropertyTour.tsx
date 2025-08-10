@@ -87,7 +87,7 @@ export default function PropertyTour({
   const [progress, setProgress] = useState(0);
   
   const audioRef = useRef<HTMLAudioElement>(null);
-  const progressInterval = useRef<NodeJS.Timeout>();
+  const progressInterval = useRef<NodeJS.Timeout | null>(null);
 
   // Mock tour data - replace with actual API calls
   const tourStops: TourStop[] = [

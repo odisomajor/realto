@@ -2,11 +2,11 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
+import { Button } from '@/components/ui/Button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Mail, Clock, RefreshCw } from 'lucide-react';
-import { api } from '@/lib/api';
+import { authApi } from '@/lib/api';
 
 export default function VerificationPendingPage() {
   const router = useRouter();
@@ -47,17 +47,11 @@ export default function VerificationPendingPage() {
     setMessage('');
 
     try {
-      const response = await fetch(api.auth.resendVerification, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email }),
-      });
+      const response = await authApi.resendVerification(email);
 
-      const data = await response.json();
+      const data = response.data;
 
-      if (response.ok) {
+      if (response.status === 200) {
         setMessage('Verification email sent successfully! Please check your inbox.');
         setCanResend(false);
         setCountdown(60);

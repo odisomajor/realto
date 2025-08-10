@@ -116,17 +116,15 @@ export const useBrowsingSession = create<BrowsingSessionState>()(
 
 // Hook to get browsing session stats for display
 export const useBrowsingStats = () => {
-  const { session, isRegistrationRequired } = useBrowsingSession()
+  const state = useBrowsingSession()
   
-  const remainingViews = session 
-    ? Math.max(0, MAX_PROPERTIES_WITHOUT_REGISTRATION - session.propertiesViewed)
-    : MAX_PROPERTIES_WITHOUT_REGISTRATION
+  const remainingViews = Math.max(0, 3 - state.viewCount)
 
   return {
-    propertiesViewed: session?.propertiesViewed || 0,
+    propertiesViewed: state.viewCount,
     remainingViews,
-    maxViews: MAX_PROPERTIES_WITHOUT_REGISTRATION,
-    isRegistrationRequired,
-    sessionExpired: session ? isSessionExpired(session) : false
+    maxViews: 3,
+    isRegistrationRequired: state.viewCount >= 3 && !state.registrationPromptShown,
+    sessionExpired: false
   }
 }

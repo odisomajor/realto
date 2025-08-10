@@ -5,9 +5,9 @@ const GOOGLE_MAPS_CONFIG = {
   apiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '',
   version: 'weekly',
   libraries: ['places', 'geometry', 'geocoding'] as const,
-  region: 'KE', // Kenya
-  language: 'en',
-};
+  region: 'KE',
+  language: 'en'
+} as const;
 
 let googleMapsLoader: Loader | null = null;
 let isGoogleMapsLoaded = false;
@@ -15,7 +15,10 @@ let isGoogleMapsLoaded = false;
 // Initialize Google Maps loader
 export const initializeGoogleMaps = (): Loader => {
   if (!googleMapsLoader) {
-    googleMapsLoader = new Loader(GOOGLE_MAPS_CONFIG);
+    googleMapsLoader = new Loader({
+      ...GOOGLE_MAPS_CONFIG,
+      libraries: [...GOOGLE_MAPS_CONFIG.libraries]
+    });
   }
   return googleMapsLoader;
 };

@@ -37,7 +37,7 @@ interface PropertyStats {
   lastViewed?: string
 }
 
-interface EnhancedProperty extends Property {
+interface EnhancedProperty extends Omit<Property, 'status'> {
   stats?: PropertyStats
   status: 'active' | 'inactive' | 'sold' | 'rented'
 }
@@ -158,7 +158,7 @@ export default function MyPropertiesPage() {
 
   if (loading) {
     return (
-      <ProtectedRoute allowedRoles={['AGENT']}>
+      <ProtectedRoute requiredRole="AGENT">
         <div className="container mx-auto px-4 py-8">
           <div className="flex items-center justify-center min-h-[400px]">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
@@ -169,7 +169,7 @@ export default function MyPropertiesPage() {
   }
 
   return (
-    <ProtectedRoute allowedRoles={['AGENT']}>
+    <ProtectedRoute requiredRole="AGENT">
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8">

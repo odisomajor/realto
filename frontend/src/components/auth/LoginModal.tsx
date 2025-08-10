@@ -18,7 +18,7 @@ interface LoginModalProps {
 export default function LoginModal({ isOpen, onClose, onSwitchToRegister }: LoginModalProps) {
   const router = useRouter();
   const { login } = useAuth();
-  const { setRegistrationPrompted } = useBrowsingSession();
+  const { markRegistrationPromptShown } = useBrowsingSession();
   
   const [formData, setFormData] = useState({
     email: '',
@@ -63,7 +63,7 @@ export default function LoginModal({ isOpen, onClose, onSwitchToRegister }: Logi
       await login(formData.email, formData.password);
       
       // Mark registration as prompted to prevent showing modal again
-      setRegistrationPrompted();
+      await markRegistrationPromptShown();
       
       // Close modal and redirect to dashboard
       onClose();
@@ -117,19 +117,25 @@ export default function LoginModal({ isOpen, onClose, onSwitchToRegister }: Logi
                 </div>
               )}
 
-              <Input
-                label="Email Address"
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                required
-                autoComplete="email"
-              />
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Email Address
+                </label>
+                <Input
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  required
+                  autoComplete="email"
+                />
+              </div>
 
               <div className="relative">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Password
+                </label>
                 <Input
-                  label="Password"
                   type={showPassword ? 'text' : 'password'}
                   name="password"
                   value={formData.password}

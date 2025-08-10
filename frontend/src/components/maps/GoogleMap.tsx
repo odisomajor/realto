@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { Wrapper } from '@googlemaps/react-wrapper';
-import { MarkerClusterer } from '@googlemaps/markerclusterer';
+import { MarkerClusterer, GridAlgorithm } from '@googlemaps/markerclusterer';
 import { loadGoogleMaps, KENYA_BOUNDS, KENYA_CITIES, calculateDistance } from '@/lib/google-maps';
 
 interface Property {
@@ -208,7 +208,7 @@ function MapComponent({
       const clusterer = new MarkerClusterer({
         map,
         markers: newMarkers,
-        algorithm: new MarkerClusterer.GridAlgorithm({ gridSize: 60 }),
+        algorithm: new GridAlgorithm({ gridSize: 60 }),
         renderer: {
           render: ({ count, position }) => {
             // Custom cluster marker
@@ -258,10 +258,9 @@ function MapComponent({
 
   // Update marker styles when selected property changes
   useEffect(() => {
-    if (!markerClusterer) return;
+    if (!markers.length) return;
     
-    const clusteredMarkers = markerClusterer.getMarkers();
-    clusteredMarkers.forEach((marker, index) => {
+    markers.forEach((marker, index) => {
       const property = properties[index];
       if (property) {
         const getMarkerIcon = (type: string, isSelected: boolean) => {
@@ -283,7 +282,7 @@ function MapComponent({
         marker.setAnimation(selectedProperty?.id === property.id ? google.maps.Animation.BOUNCE : undefined);
       }
     });
-  }, [selectedProperty, markerClusterer, properties]);
+  }, [selectedProperty, markers, properties]);
 
   return (
     <div className="relative w-full h-full">
@@ -351,7 +350,7 @@ export default function GoogleMap({
       );
     }
 
-    return null;
+    return <div />;
   };
 
   return (

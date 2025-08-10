@@ -22,7 +22,7 @@ export interface AuthState {
   isAuthenticated: boolean
   isLoading: boolean
   hasHydrated: boolean
-  login: (email: string, password: string) => Promise<void>
+  login: (email: string, password: string) => Promise<any>
   register: (userData: RegisterData) => Promise<void>
   logout: () => void
   refreshAuth: () => Promise<void>
@@ -69,6 +69,9 @@ export const useAuth = create<AuthState>()(
           if (typeof window !== 'undefined') {
             localStorage.setItem('token', tokens.accessToken)
           }
+
+          // Return the response data for 2FA handling
+          return response.data
         } catch (error) {
           set({ isLoading: false })
           throw error

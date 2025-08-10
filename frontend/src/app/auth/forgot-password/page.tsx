@@ -62,15 +62,19 @@ export default function ForgotPasswordPage() {
                 </div>
               )}
 
-              <Input
-                label="Email address"
-                type="email"
-                name="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                placeholder="Enter your email address"
-              />
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Email address
+                </label>
+                <Input
+                  type="email"
+                  name="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  placeholder="Enter your email address"
+                />
+              </div>
 
               <Button
                 type="submit"

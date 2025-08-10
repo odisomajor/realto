@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { propertyApi } from '@/lib/api'
-import { PropertyTour } from '@/components/properties/PropertyTour'
+import PropertyTour from '@/components/properties/PropertyTour'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/badge'
@@ -21,7 +21,7 @@ import {
   MessageCircle
 } from 'lucide-react'
 import Link from 'next/link'
-import { Property } from '@/types/property'
+import { Property } from '@/types'
 
 export default function PropertyTourPage() {
   const params = useParams()
@@ -182,7 +182,7 @@ export default function PropertyTourPage() {
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           {/* Tour Component */}
           <div className="lg:col-span-3">
-            <PropertyTour propertyId={propertyId} />
+            <PropertyTour propertyId={propertyId} propertyTitle={property?.title || 'Property Tour'} />
           </div>
           
           {/* Property Info Sidebar */}
@@ -197,8 +197,8 @@ export default function PropertyTourPage() {
                   <div className="text-2xl font-bold text-green-600 mb-2">
                     {formatCurrency(property.price)}
                   </div>
-                  <Badge variant={property.category === 'sale' ? 'default' : 'secondary'}>
-                    For {property.category === 'sale' ? 'Sale' : 'Rent'}
+                  <Badge variant={property.type === 'sale' ? 'default' : 'secondary'}>
+                    For {property.type === 'sale' ? 'Sale' : 'Rent'}
                   </Badge>
                 </div>
                 
@@ -250,7 +250,7 @@ export default function PropertyTourPage() {
                     </div>
                     <div>
                       <div className="font-medium">{property.agent.name}</div>
-                      <div className="text-sm text-gray-500">{property.agent.company}</div>
+                      <div className="text-sm text-gray-500">{property.agent.email}</div>
                     </div>
                   </div>
                   

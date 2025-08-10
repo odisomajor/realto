@@ -2,36 +2,12 @@
 
 import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
+import ProtectedRoute from '@/components/auth/ProtectedRoute'
 import { propertyApi } from '@/lib/api'
-import { PropertyCard } from '@/components/properties/PropertyCard'
+import PropertyCard from '@/components/properties/PropertyCard'
 import { toast } from 'react-hot-toast'
 
-interface Property {
-  id: string
-  title: string
-  description: string
-  price: number
-  address: string
-  city: string
-  state: string
-  zipCode: string
-  type: string
-  status: string
-  bedrooms: number
-  bathrooms: number
-  area: number
-  images: string[]
-  isFeatured: boolean
-  createdAt: string
-  updatedAt: string
-  agent: {
-    id: string
-    name: string
-    email: string
-    avatar?: string
-  }
-}
+import { Property } from '@/types'
 
 const FavoritesPage = () => {
   const [favorites, setFavorites] = useState<Property[]>([])
@@ -106,8 +82,6 @@ const FavoritesPage = () => {
             <PropertyCard
               key={property.id}
               property={property}
-              onFavoriteToggle={() => handleToggleFavorite(property.id)}
-              isFavorite={true}
             />
           ))}
         </div>

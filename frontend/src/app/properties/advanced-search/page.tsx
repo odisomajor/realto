@@ -28,30 +28,7 @@ import {
   Zap
 } from 'lucide-react'
 
-interface Property {
-  id: string
-  title: string
-  price: number
-  location: string
-  bedrooms: number
-  bathrooms: number
-  area: number
-  type: string
-  images: string[]
-  features: string[]
-  description: string
-  agent: {
-    name: string
-    phone: string
-    email: string
-    image: string
-  }
-  status: 'available' | 'sold' | 'rented'
-  yearBuilt: number
-  listingDate: string
-  views: number
-  favorites: number
-}
+import { Property } from '@/types'
 
 interface SearchFilters {
   query: string
@@ -90,74 +67,74 @@ export default function AdvancedSearchPage() {
     {
       id: '1',
       title: 'Modern 3BR Apartment in Kilimani',
+      description: 'Beautiful modern apartment with stunning city views',
       price: 15000000,
       location: 'Kilimani, Nairobi',
       bedrooms: 3,
       bathrooms: 2,
       area: 120,
-      type: 'apartment',
+      type: 'sale',
+      category: 'residential',
+      status: 'available',
       images: ['/api/placeholder/400/300', '/api/placeholder/400/300'],
       features: ['parking', 'wifi', 'security', 'pool', 'gym'],
-      description: 'Beautiful modern apartment with stunning city views',
       agent: {
+        id: '1',
         name: 'Sarah Johnson',
         phone: '+254 700 123456',
         email: 'sarah@realestate.com',
-        image: '/api/placeholder/100/100'
+        avatar: '/api/placeholder/100/100'
       },
-      status: 'available',
-      yearBuilt: 2020,
-      listingDate: '2024-01-15',
-      views: 245,
-      favorites: 18
+      createdAt: '2024-01-15T00:00:00Z',
+      updatedAt: '2024-01-15T00:00:00Z'
     },
     {
       id: '2',
       title: 'Luxury Villa in Karen',
+      description: 'Spacious luxury villa with beautiful gardens',
       price: 45000000,
       location: 'Karen, Nairobi',
       bedrooms: 5,
       bathrooms: 4,
       area: 350,
-      type: 'villa',
+      type: 'sale',
+      category: 'residential',
+      status: 'available',
       images: ['/api/placeholder/400/300', '/api/placeholder/400/300'],
       features: ['parking', 'garden', 'security', 'pool', 'backup_power'],
-      description: 'Spacious luxury villa with beautiful gardens',
       agent: {
+        id: '2',
         name: 'Michael Chen',
         phone: '+254 700 789012',
         email: 'michael@realestate.com',
-        image: '/api/placeholder/100/100'
+        avatar: '/api/placeholder/100/100'
       },
-      status: 'available',
-      yearBuilt: 2018,
-      listingDate: '2024-01-10',
-      views: 189,
-      favorites: 32
+      createdAt: '2024-01-10T00:00:00Z',
+      updatedAt: '2024-01-10T00:00:00Z'
     },
     {
       id: '3',
       title: 'Penthouse in Westlands',
+      description: 'Stunning penthouse with panoramic city views',
       price: 35000000,
       location: 'Westlands, Nairobi',
       bedrooms: 4,
       bathrooms: 3,
       area: 200,
-      type: 'penthouse',
+      type: 'sale',
+      category: 'residential',
+      status: 'available',
       images: ['/api/placeholder/400/300', '/api/placeholder/400/300'],
       features: ['parking', 'wifi', 'security', 'pool', 'gym', 'balcony'],
-      description: 'Stunning penthouse with panoramic city views',
       agent: {
+        id: '3',
         name: 'Grace Wanjiku',
         phone: '+254 700 345678',
         email: 'grace@realestate.com',
-        image: '/api/placeholder/100/100'
+        avatar: '/api/placeholder/100/100'
       },
-      status: 'available',
-      yearBuilt: 2021,
-      listingDate: '2024-01-12',
-      views: 312,
-      favorites: 45
+      createdAt: '2024-01-12T00:00:00Z',
+      updatedAt: '2024-01-12T00:00:00Z'
     }
   ]
 
@@ -181,7 +158,7 @@ export default function AdvancedSearchPage() {
           return false
         }
         
-        if (filters.propertyType.length > 0 && !filters.propertyType.includes(property.type)) {
+        if (filters.propertyType.length > 0 && !filters.propertyType.includes(property.category)) {
           return false
         }
         
@@ -189,11 +166,11 @@ export default function AdvancedSearchPage() {
           return false
         }
         
-        if (filters.bedrooms.length > 0 && !filters.bedrooms.includes(property.bedrooms.toString())) {
+        if (filters.bedrooms.length > 0 && !filters.bedrooms.includes(property.bedrooms)) {
           return false
         }
         
-        if (filters.bathrooms.length > 0 && !filters.bathrooms.includes(property.bathrooms.toString())) {
+        if (filters.bathrooms.length > 0 && !filters.bathrooms.includes(property.bathrooms)) {
           return false
         }
         
@@ -208,10 +185,6 @@ export default function AdvancedSearchPage() {
           if (!hasAllFeatures) return false
         }
         
-        if (property.yearBuilt < filters.yearBuilt.min || property.yearBuilt > filters.yearBuilt.max) {
-          return false
-        }
-        
         return true
       })
       
@@ -224,7 +197,7 @@ export default function AdvancedSearchPage() {
           filteredProperties.sort((a, b) => b.price - a.price)
           break
         case 'date_desc':
-          filteredProperties.sort((a, b) => new Date(b.listingDate).getTime() - new Date(a.listingDate).getTime())
+          filteredProperties.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
           break
         case 'area_desc':
           filteredProperties.sort((a, b) => b.area - a.area)
@@ -473,9 +446,6 @@ export default function AdvancedSearchPage() {
                   <PropertyCard
                     key={property.id}
                     property={property}
-                    onFavorite={(id) => console.log('Favorited:', id)}
-                    onShare={(id) => console.log('Shared:', id)}
-                    onClick={(id) => router.push(`/properties/${id}`)}
                   />
                 ))}
               </div>

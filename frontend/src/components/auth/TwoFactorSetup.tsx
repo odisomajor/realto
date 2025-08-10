@@ -226,15 +226,19 @@ export default function TwoFactorSetup({ onComplete, onSkip, isRequired = true }
         </div>
       )}
 
-      <Input
-        label="Verification Code"
-        type="text"
-        value={verificationCode}
-        onChange={(e) => setVerificationCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-        placeholder="000000"
-        className="text-center text-2xl tracking-widest"
-        maxLength={6}
-      />
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Verification Code
+        </label>
+        <Input
+          type="text"
+          value={verificationCode}
+          onChange={(e) => setVerificationCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+          placeholder="000000"
+          className="text-center text-2xl tracking-widest"
+          maxLength={6}
+        />
+      </div>
 
       <Button
         onClick={verifySetup}

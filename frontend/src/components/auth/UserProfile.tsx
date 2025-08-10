@@ -203,41 +203,58 @@ export default function UserProfile({ onClose }: UserProfileProps) {
               )}
 
               <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    First Name
+                  </label>
+                  <Input
+                    type="text"
+                    name="firstName"
+                    value={profileData.firstName}
+                    onChange={handleProfileChange}
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Last Name
+                  </label>
+                  <Input
+                    type="text"
+                    name="lastName"
+                    value={profileData.lastName}
+                    onChange={handleProfileChange}
+                    required
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Email Address
+                </label>
                 <Input
-                  label="First Name"
-                  type="text"
-                  name="firstName"
-                  value={profileData.firstName}
-                  onChange={handleProfileChange}
-                  required
-                />
-                <Input
-                  label="Last Name"
-                  type="text"
-                  name="lastName"
-                  value={profileData.lastName}
+                  type="email"
+                  name="email"
+                  value={profileData.email}
                   onChange={handleProfileChange}
                   required
                 />
               </div>
 
-              <Input
-                label="Email Address"
-                type="email"
-                name="email"
-                value={profileData.email}
-                onChange={handleProfileChange}
-                required
-              />
-
-              <Input
-                label="Phone Number"
-                type="tel"
-                name="phone"
-                value={profileData.phone}
-                onChange={handleProfileChange}
-                required
-              />
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Phone Number
+                </label>
+                <Input
+                  type="tel"
+                  name="phone"
+                  value={profileData.phone}
+                  onChange={handleProfileChange}
+                  required
+                />
+              </div>
 
               <div className="flex justify-end">
                 <Button
@@ -270,32 +287,44 @@ export default function UserProfile({ onClose }: UserProfileProps) {
                 </div>
               )}
 
-              <Input
-                label="Current Password"
-                type="password"
-                name="currentPassword"
-                value={passwordData.currentPassword}
-                onChange={handlePasswordInputChange}
-                required
-              />
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Current Password
+                </label>
+                <Input
+                  type="password"
+                  name="currentPassword"
+                  value={passwordData.currentPassword}
+                  onChange={handlePasswordInputChange}
+                  required
+                />
+              </div>
 
-              <Input
-                label="New Password"
-                type="password"
-                name="newPassword"
-                value={passwordData.newPassword}
-                onChange={handlePasswordInputChange}
-                required
-              />
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  New Password
+                </label>
+                <Input
+                  type="password"
+                  name="newPassword"
+                  value={passwordData.newPassword}
+                  onChange={handlePasswordInputChange}
+                  required
+                />
+              </div>
 
-              <Input
-                label="Confirm New Password"
-                type="password"
-                name="confirmPassword"
-                value={passwordData.confirmPassword}
-                onChange={handlePasswordInputChange}
-                required
-              />
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Confirm New Password
+                </label>
+                <Input
+                  type="password"
+                  name="confirmPassword"
+                  value={passwordData.confirmPassword}
+                  onChange={handlePasswordInputChange}
+                  required
+                />
+              </div>
 
               <div className="flex justify-end">
                 <Button

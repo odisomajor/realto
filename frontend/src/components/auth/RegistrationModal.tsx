@@ -18,7 +18,7 @@ interface RegistrationModalProps {
 export default function RegistrationModal({ isOpen, onClose, onSwitchToLogin }: RegistrationModalProps) {
   const router = useRouter();
   const { register } = useAuth();
-  const { setRegistrationPrompted } = useBrowsingSession();
+  const { markRegistrationPromptShown } = useBrowsingSession();
   
   const [formData, setFormData] = useState({
     firstName: '',
@@ -105,7 +105,7 @@ export default function RegistrationModal({ isOpen, onClose, onSwitchToLogin }: 
       localStorage.setItem('pendingVerificationEmail', formData.email);
       
       // Mark registration as prompted to prevent showing modal again
-      setRegistrationPrompted();
+      markRegistrationPromptShown();
       
       // Show success message and redirect to verification pending page
       setErrors({ general: '' });
@@ -159,94 +159,76 @@ export default function RegistrationModal({ isOpen, onClose, onSwitchToLogin }: 
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    First Name
+                  </label>
                   <Input
-                    label="First Name"
                     type="text"
-                    name="firstName"
                     value={formData.firstName}
-                    onChange={handleChange}
-                    error={errors.firstName}
+                    onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
                     required
                   />
                 </div>
+
                 <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Last Name
+                  </label>
                   <Input
-                    label="Last Name"
                     type="text"
-                    name="lastName"
                     value={formData.lastName}
-                    onChange={handleChange}
-                    error={errors.lastName}
+                    onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
                     required
                   />
                 </div>
               </div>
 
-              <Input
-                label="Email Address"
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                error={errors.email}
-                required
-              />
-
-              <Input
-                label="Phone Number"
-                type="tel"
-                name="phone"
-                value={formData.phone}
-                onChange={handleChange}
-                error={errors.phone}
-                placeholder="+254712345678 or 0712345678"
-                required
-              />
-
-              <div className="relative">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Email Address
+                </label>
                 <Input
-                  label="Password"
-                  type={showPassword ? 'text' : 'password'}
-                  name="password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  error={errors.password}
+                  type="email"
+                  value={formData.email}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   required
                 />
-                <button
-                  type="button"
-                  className="absolute right-3 top-8 text-gray-400 hover:text-gray-600"
-                  onClick={() => setShowPassword(!showPassword)}
-                >
-                  {showPassword ? (
-                    <EyeSlashIcon className="h-5 w-5" />
-                  ) : (
-                    <EyeIcon className="h-5 w-5" />
-                  )}
-                </button>
               </div>
 
-              <div className="relative">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Phone Number
+                </label>
                 <Input
-                  label="Confirm Password"
-                  type={showConfirmPassword ? 'text' : 'password'}
-                  name="confirmPassword"
-                  value={formData.confirmPassword}
-                  onChange={handleChange}
-                  error={errors.confirmPassword}
+                  type="tel"
+                  value={formData.phone}
+                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                   required
                 />
-                <button
-                  type="button"
-                  className="absolute right-3 top-8 text-gray-400 hover:text-gray-600"
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                >
-                  {showConfirmPassword ? (
-                    <EyeSlashIcon className="h-5 w-5" />
-                  ) : (
-                    <EyeIcon className="h-5 w-5" />
-                  )}
-                </button>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Password
+                </label>
+                <Input
+                  type="password"
+                  value={formData.password}
+                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Confirm Password
+                </label>
+                <Input
+                  type="password"
+                  value={formData.confirmPassword}
+                  onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+                  required
+                />
               </div>
 
               <div className="flex items-start">
