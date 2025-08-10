@@ -2,16 +2,17 @@ import Redis from 'ioredis';
 import { logger } from '@/utils/logger';
 
 // Redis configuration
-const redisConfig: RedisOptions = {
+const redisConfig = {
   host: process.env.REDIS_HOST || 'localhost',
   port: parseInt(process.env.REDIS_PORT || '6379'),
   password: process.env.REDIS_PASSWORD,
   db: parseInt(process.env.REDIS_DB || '0'),
-  connectTimeout: 10000,
-  lazyConnect: true,
+  retryDelayOnFailover: 100,
   maxRetriesPerRequest: 3,
-  enableReadyCheck: false,
-  retryDelayOnClusterDown: 300
+  lazyConnect: true,
+  keepAlive: 30000,
+  connectTimeout: 10000,
+  commandTimeout: 5000,
 };
 
 // Create Redis instance

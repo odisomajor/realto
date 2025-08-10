@@ -365,6 +365,6 @@ export const asyncValidate = async (
   }
 };
 
-// Export individual validation functions for convenience
+// Individual exports for backward compatibility
 export const isValidUUID = customValidators.isUUID;
 export const isValidSlug = customValidators.isSlug;

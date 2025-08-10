@@ -62,7 +62,7 @@ class GracefulShutdown {
 
     // Handle unhandled promise rejections
     process.on('unhandledRejection', (reason, promise) => {
-      this.logger?.error(`Unhandled Rejection at: ${promise} reason: ${reason}`);
+      this.logger?.error(`Unhandled Rejection at: ${promise}, reason: ${reason}`);
       this.shutdown('unhandledRejection');
     });
 

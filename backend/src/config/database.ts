@@ -16,13 +16,16 @@ const prisma = new PrismaClient({
 
 // Redis Client Configuration
 const redis = new Redis(process.env.REDIS_URL || 'redis://localhost:6379', {
+  retryDelayOnFailover: 100,
   enableReadyCheck: false,
-  maxRetriesPerRequest: 3,
+  maxRetriesPerRequest: null,
   lazyConnect: true,
   keepAlive: 30000,
   connectTimeout: 10000,
   commandTimeout: 5000,
-  retryDelayOnClusterDown: 300
+  retryDelayOnClusterDown: 300,
+  retryDelayOnFailover: 100,
+  maxRetriesPerRequest: 3
 });
 
 // Redis event handlers

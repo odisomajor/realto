@@ -1,13 +1,48 @@
 import { 
   PropertyType, 
-  ListingType, 
-  PropertyStatus, 
-  PropertyCondition,
-  InquiryType,
-  InquiryStatus,
-  AppointmentType,
-  AppointmentStatus
+  ListingType
 } from '@prisma/client';
+
+// Define custom enums that are not in Prisma schema
+export enum PropertyStatus {
+  ACTIVE = 'ACTIVE',
+  SOLD = 'SOLD',
+  RENTED = 'RENTED',
+  PENDING = 'PENDING',
+  INACTIVE = 'INACTIVE'
+}
+
+export enum PropertyCondition {
+  EXCELLENT = 'EXCELLENT',
+  GOOD = 'GOOD',
+  FAIR = 'FAIR',
+  POOR = 'POOR'
+}
+
+export enum InquiryType {
+  GENERAL = 'GENERAL',
+  VIEWING = 'VIEWING',
+  OFFER = 'OFFER'
+}
+
+export enum InquiryStatus {
+  NEW = 'NEW',
+  CONTACTED = 'CONTACTED',
+  CLOSED = 'CLOSED'
+}
+
+export enum AppointmentType {
+  VIEWING = 'VIEWING',
+  CONSULTATION = 'CONSULTATION',
+  INSPECTION = 'INSPECTION'
+}
+
+export enum AppointmentStatus {
+  SCHEDULED = 'SCHEDULED',
+  CONFIRMED = 'CONFIRMED',
+  COMPLETED = 'COMPLETED',
+  CANCELLED = 'CANCELLED'
+}
 
 export interface PropertySearchFilters {
   // Location
