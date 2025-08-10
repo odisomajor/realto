@@ -12,6 +12,7 @@
     "test:watch": "jest --watch",
     "lint": "eslint src/**/*.{js,ts}",
     "lint:fix": "eslint src/**/*.{js,ts} --fix",
+    "type-check": "tsc --noEmit",
     "format": "prettier --write src/**/*.{js,ts}",
     "prisma:generate": "prisma generate",
     "prisma:push": "prisma db push",
