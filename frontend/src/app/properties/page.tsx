@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, Suspense } from 'react';
 import PropertyFilters, { PropertyFilters as PropertyFiltersType } from '@/components/properties/PropertyFilters';
 import { propertyApi, geocodingApi } from '@/lib/api';
 import PropertyCard from '@/components/properties/PropertyCard';
@@ -56,7 +56,7 @@ interface Property {
   distance?: number; // Added for distance-based sorting
 }
 
-export default function PropertiesPage() {
+function PropertiesPageContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [properties, setProperties] = useState<Property[]>([]);
@@ -431,5 +431,20 @@ export default function PropertiesPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function PropertiesPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading properties...</p>
+        </div>
+      </div>
+    }>
+      <PropertiesPageContent />
+    </Suspense>
   );
 }
