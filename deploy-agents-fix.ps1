@@ -1,3 +1,38 @@
+Write-Host "🚀 Deploying Agents Page Fix to Production" -ForegroundColor Green
+Write-Host "Server: 146.190.121.74" -ForegroundColor Cyan
+Write-Host ("=" * 50)
+
+# Check if SSH key exists
+$sshKeyPath = ".\key"
+if (-not (Test-Path $sshKeyPath)) {
+    Write-Host "❌ SSH key not found at: $sshKeyPath" -ForegroundColor Red
+    exit 1
+}
+
+Write-Host "✅ SSH key found: $sshKeyPath" -ForegroundColor Green
+
+# Set correct permissions for SSH key
+try {
+    icacls $sshKeyPath /inheritance:r /grant:r "$env:USERNAME:(R)" | Out-Null
+    Write-Host "✅ SSH key permissions set correctly" -ForegroundColor Green
+} catch {
+    Write-Host "⚠️  Warning: Could not set SSH key permissions" -ForegroundColor Yellow
+}
+
+Write-Host ""
+Write-Host "🔐 Connecting to server and deploying agents page..." -ForegroundColor Blue
+
+try {
+    # First, create the agents directory and page on the server
+    $createAgentsScript = @'
+# Navigate to frontend app directory
+cd /var/www/xillix/frontend/src/app
+
+# Create agents directory if it doesn't exist
+mkdir -p agents
+
+# Create the agents page
+cat > agents/page.tsx << 'EOF'
 'use client';
 
 import React from 'react';
@@ -62,3 +97,41 @@ export default function AgentsPage() {
     </div>
   );
 }
+EOF
+
+echo "✅ Agents page created successfully"
+
+# Rebuild the frontend
+cd /var/www/xillix/frontend
+echo "🔨 Building frontend..."
+npm run build
+
+# Restart the frontend application
+echo "🔄 Restarting frontend application..."
+pm2 restart real-estate-frontend
+
+echo "✅ Agents page deployment completed!"
+'@
+
+    $sshCommand = "ssh -i $sshKeyPath -o StrictHostKeyChecking=no root@146.190.121.74 '$createAgentsScript'"
+    
+    Invoke-Expression $sshCommand
+    
+    if ($LASTEXITCODE -eq 0) {
+        Write-Host ""
+        Write-Host "✅ Agents page deployed successfully!" -ForegroundColor Green
+        Write-Host ""
+        Write-Host "🌐 Test the agents page at:" -ForegroundColor Cyan
+        Write-Host "   https://xillix.co.ke/agents" -ForegroundColor White
+        Write-Host ""
+    } else {
+        Write-Host ""
+        Write-Host "❌ Deployment failed with exit code: $LASTEXITCODE" -ForegroundColor Red
+    }
+} catch {
+    Write-Host ""
+    Write-Host "❌ SSH connection failed: $($_.Exception.Message)" -ForegroundColor Red
+    exit 1
+}
+
+Write-Host "🎉 Agents page fix deployment completed!" -ForegroundColor Green

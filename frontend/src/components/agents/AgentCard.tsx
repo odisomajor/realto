@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { 
@@ -13,14 +13,29 @@ import {
 import { StarIcon as StarSolidIcon } from '@heroicons/react/24/solid'
 import { Card, CardContent } from '@/components/ui/Card'
 import { Agent } from '@/types'
-import { useAuth } from '@/lib/auth'
 
 interface AgentCardProps {
   agent: Agent
 }
 
 const AgentCard: React.FC<AgentCardProps> = ({ agent }) => {
-  const { isAuthenticated, hasHydrated } = useAuth()
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [hasHydrated, setHasHydrated] = useState(false)
+
+  useEffect(() => {
+    // Check authentication status on client side only
+    const checkAuth = () => {
+      try {
+        const token = localStorage.getItem('token')
+        setIsAuthenticated(!!token)
+      } catch (error) {
+        setIsAuthenticated(false)
+      }
+      setHasHydrated(true)
+    }
+
+    checkAuth()
+  }, [])
   const {
     id,
     name,

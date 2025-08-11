@@ -18,7 +18,6 @@ export default function AgentsPage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {/* Sample Agent Cards */}
           {[1, 2, 3, 4, 5, 6].map((agent) => (
             <Card key={agent} className="hover:shadow-lg transition-shadow">
               <CardHeader>

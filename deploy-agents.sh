@@ -1,3 +1,28 @@
+#!/bin/bash
+
+echo "🚀 Deploying Agents Page Fix to Production"
+echo "Server: 146.190.121.74"
+echo "=================================="
+
+# Check if SSH key exists
+if [ ! -f "./key" ]; then
+    echo "❌ SSH key not found"
+    exit 1
+fi
+
+echo "✅ SSH key found"
+echo "🔐 Connecting to server..."
+
+# Deploy agents page
+ssh -i ./key -o StrictHostKeyChecking=no root@146.190.121.74 << 'ENDSSH'
+# Navigate to frontend app directory
+cd /var/www/xillix/frontend/src/app
+
+# Create agents directory
+mkdir -p agents
+
+# Create the agents page
+cat > agents/page.tsx << 'EOF'
 'use client';
 
 import React from 'react';
@@ -18,7 +43,6 @@ export default function AgentsPage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {/* Sample Agent Cards */}
           {[1, 2, 3, 4, 5, 6].map((agent) => (
             <Card key={agent} className="hover:shadow-lg transition-shadow">
               <CardHeader>
@@ -62,3 +86,27 @@ export default function AgentsPage() {
     </div>
   );
 }
+EOF
+
+echo "✅ Agents page created successfully"
+
+# Rebuild the frontend
+cd /var/www/xillix/frontend
+echo "🔨 Building frontend..."
+npm run build
+
+# Restart the frontend application
+echo "🔄 Restarting frontend application..."
+pm2 restart real-estate-frontend
+
+echo "✅ Agents page deployment completed!"
+ENDSSH
+
+if [ $? -eq 0 ]; then
+    echo "✅ Agents page deployed successfully!"
+    echo "🌐 Test at: https://xillix.co.ke/agents"
+else
+    echo "❌ Deployment failed"
+fi
+
+echo "🎉 Deployment completed!"
