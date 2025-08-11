@@ -3,6 +3,7 @@ import "./globals.css";
 import { AuthProvider } from '@/contexts/AuthContext';
 import { Toaster } from 'react-hot-toast';
 import Header from '@/components/layout/Header';
+import Footer from '@/components/layout/Footer';
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://xillix.co.ke'),
@@ -167,6 +168,7 @@ export default function RootLayout({
         <AuthProvider>
           <Header />
           {children}
+          <Footer />
           <Toaster 
             position="top-right"
             toastOptions={{
