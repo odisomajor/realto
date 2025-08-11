@@ -5,6 +5,7 @@ import { Search, Filter, X, MapPin, Home, DollarSign, Calendar, Grid, List, Slid
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Card, CardContent } from '@/components/ui/Card';
+import LocationSearch from '../search/LocationSearch';
 
 interface PropertySearchFiltersProps {
   onFiltersChange: (filters: PropertyFilters) => void;
@@ -413,11 +414,10 @@ export default function PropertySearchFilters({
                   <MapPin className="inline h-4 w-4 mr-1" />
                   Location
                 </label>
-                <Input
-                  placeholder="Enter city, county, or area"
+                <LocationSearch
                   value={filters.location}
-                  onChange={(e) => handleFilterChange('location', e.target.value)}
-                  className="text-sm"
+                  onLocationSelect={(location) => handleFilterChange('location', location)}
+                  placeholder="Search counties, cities, areas..."
                 />
                 {filters.location && (
                   <Button

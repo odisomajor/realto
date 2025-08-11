@@ -210,7 +210,7 @@ export default function PropertyDetailPage() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
           <p className="text-gray-600">Loading property details...</p>
         </div>
       </div>
@@ -243,9 +243,9 @@ export default function PropertyDetailPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Breadcrumb */}
         <nav className="flex items-center space-x-2 text-sm text-gray-600 mb-6">
-          <button 
+          <button
             onClick={() => router.push('/properties')}
-            className="hover:text-blue-600 transition-colors"
+            className="hover:text-green-600 transition-colors"
           >
             Properties
           </button>
@@ -307,7 +307,7 @@ export default function PropertyDetailPage() {
                     <h3 className="font-semibold text-lg text-gray-900 mb-2 line-clamp-2">
                       {relatedProperty.title}
                     </h3>
-                    <p className="text-2xl font-bold text-blue-600 mb-2">
+                    <p className="text-2xl font-bold text-green-600 mb-2">
                       {formatPrice(relatedProperty.price)}
                     </p>
                     <p className="text-gray-600 mb-3 flex items-center">

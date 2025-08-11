@@ -290,7 +290,7 @@ export default function PropertyDetails({
             </div>
 
             <div className="flex items-center justify-between">
-              <div className="text-3xl font-bold text-blue-600">
+              <div className="text-3xl font-bold text-green-600">
                 {formatPrice(property.price)}
                 {property.type === 'rent' && <span className="text-lg text-gray-500">/month</span>}
               </div>
