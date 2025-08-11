@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { AuthProvider } from '@/contexts/AuthContext';
 import { Toaster } from 'react-hot-toast';
+import Header from '@/components/layout/Header';
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://xillix.co.ke'),
@@ -75,7 +76,7 @@ export const metadata: Metadata = {
   },
   manifest: '/site.webmanifest',
   verification: {
-    google: 'your-google-verification-code',
+    google: ['h9ze1yXkf_JN5iH7OPrqLN68uYDkdwijAoYSfGI_kr4', 'google78626d8683c20c1a'],
     yandex: 'your-yandex-verification-code',
     yahoo: 'your-yahoo-verification-code',
   },
@@ -164,6 +165,7 @@ export default function RootLayout({
       </head>
       <body className="antialiased">
         <AuthProvider>
+          <Header />
           {children}
           <Toaster 
             position="top-right"

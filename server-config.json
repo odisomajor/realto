@@ -1,0 +1,36 @@
+{
+  "production": {
+    "server": {
+      "host": "146.190.121.74",
+      "user": "root",
+      "port": 22,
+      "domain": "xillix.co.ke"
+    },
+    "ssh": {
+      "keyPath": "./new_key",
+      "publicKeyPath": "./new_key.pub",
+      "keyName": "xillix-production-key"
+    },
+    "deployment": {
+      "projectPath": "/var/www/xillix",
+      "repositoryUrl": "https://github.com/your-username/RealEstate.git",
+      "branch": "main",
+      "services": {
+        "frontend": {
+          "port": 3000,
+          "processName": "xillix-frontend"
+        },
+        "backend": {
+          "port": 5000,
+          "processName": "xillix-backend"
+        }
+      }
+    },
+    "database": {
+      "host": "localhost",
+      "port": 5432,
+      "name": "xillix_realestate_prod",
+      "user": "xillix_user"
+    }
+  }
+}
