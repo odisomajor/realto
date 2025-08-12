@@ -54,7 +54,7 @@ jobs:
 
       - name: Install backend dependencies
         working-directory: ./backend
-        run: npm install
+        run: npm install --legacy-peer-deps
 
       - name: Generate Prisma client
         working-directory: ./backend
@@ -91,7 +91,7 @@ jobs:
 
       - name: Install frontend dependencies
         working-directory: ./frontend
-        run: npm install
+        run: npm install --legacy-peer-deps
 
       - name: Lint frontend code
         working-directory: ./frontend
