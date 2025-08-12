@@ -146,17 +146,16 @@ export default function PropertyImageUploader({
 
   const simulateUpload = useCallback((imageId: string) => {
     const updateProgress = (progress: number) => {
-      onImagesChange(prevImages => 
-        prevImages.map(img => 
-          img.id === imageId 
-            ? { 
-                ...img, 
-                uploadStatus: progress === 100 ? 'completed' : 'uploading',
-                uploadProgress: progress 
-              }
-            : img
-        )
+      const updatedImages = images.map(img => 
+        img.id === imageId 
+          ? { 
+              ...img, 
+              uploadStatus: progress === 100 ? 'completed' as const : 'uploading' as const,
+              uploadProgress: progress 
+            }
+          : img
       );
+      onImagesChange(updatedImages);
     };
 
     // Simulate upload progress

@@ -14,7 +14,6 @@ export default function NewPropertyPage() {
     try {
       const response = await propertyApi.createProperty(propertyData);
       router.push(`/properties/${response.data.data.id}?success=Property created successfully`);
-      return response;
     } catch (error) {
       console.error('Error creating property:', error);
       throw error;

@@ -236,8 +236,18 @@ export default function PropertyDetailPage() {
       <SEOHead 
         title={`${property.title} - ${formatPrice(property.price)}`}
         description={property.description}
-        property={property}
-        canonical={`https://xillix.co.ke/properties/${property.id}`}
+        propertyData={{
+          title: property.title,
+          description: property.description,
+          price: property.price,
+          address: property.location,
+          city: property.location.split(',')[0] || 'Nairobi',
+          images: property.images,
+          type: property.type,
+          bedrooms: property.bedrooms,
+          bathrooms: property.bathrooms,
+          coordinates: property.coordinates
+        }}
       />
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">

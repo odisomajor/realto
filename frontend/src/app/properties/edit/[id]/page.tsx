@@ -41,11 +41,10 @@ export default function EditPropertyPage() {
     }
   };
 
-  const handlePropertyUpdate = async (propertyData: any) => {
+  const handlePropertyUpdate = async (propertyData: any): Promise<void> => {
     try {
-      const response = await propertyApi.updateProperty(params.id as string, propertyData);
+      await propertyApi.updateProperty(params.id as string, propertyData);
       router.push('/properties/my-properties?success=Property updated successfully');
-      return response;
     } catch (error) {
       console.error('Error updating property:', error);
       throw error;
@@ -54,7 +53,7 @@ export default function EditPropertyPage() {
 
   if (loading) {
     return (
-      <ProtectedRoute allowedRoles={['AGENT', 'ADMIN']}>
+      <ProtectedRoute requiredRole="AGENT">
         <div className="container mx-auto px-4 py-8">
           <div className="max-w-4xl mx-auto">
             <div className="flex items-center justify-center py-12">
@@ -69,7 +68,7 @@ export default function EditPropertyPage() {
 
   if (error || !property) {
     return (
-      <ProtectedRoute allowedRoles={['AGENT', 'ADMIN']}>
+      <ProtectedRoute requiredRole="AGENT">
         <div className="container mx-auto px-4 py-8">
           <div className="max-w-4xl mx-auto">
             <div className="text-center py-12">
@@ -89,7 +88,7 @@ export default function EditPropertyPage() {
   }
 
   return (
-    <ProtectedRoute allowedRoles={['AGENT', 'ADMIN']}>
+    <ProtectedRoute requiredRole="AGENT">
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
           <div className="mb-8">
@@ -99,7 +98,27 @@ export default function EditPropertyPage() {
 
           <PropertyFormWizard
             mode="edit"
-            initialData={property}
+            initialData={{
+              title: property.title,
+              description: property.description,
+              propertyType: property.category?.toUpperCase() || 'HOUSE',
+              listingType: property.type?.toUpperCase() || 'FOR_SALE',
+              address: property.location,
+              city: '', // Property interface doesn't have city field
+              county: '', // Property interface doesn't have county field
+              price: property.price.toString(),
+              currency: 'KES', // Property interface doesn't have currency field
+              bedrooms: property.bedrooms?.toString() || '0',
+              bathrooms: property.bathrooms?.toString() || '0',
+              squareFootage: property.area?.toString() || '0',
+              yearBuilt: '', // Property interface doesn't have yearBuilt field
+              features: property.features || [],
+              amenities: [], // Property interface doesn't have amenities field
+              images: [], // Initialize as empty File array since we can't convert string URLs to Files
+              virtualTour: '', // Property interface doesn't have virtualTour field
+              status: property.status?.toUpperCase() || 'ACTIVE',
+              featured: property.featured || false
+            }}
             onSubmit={handlePropertyUpdate}
             onCancel={() => router.back()}
           />

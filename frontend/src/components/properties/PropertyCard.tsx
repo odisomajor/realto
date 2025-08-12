@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { MapPinIcon, HomeIcon, BanknotesIcon } from '@heroicons/react/24/outline'
@@ -6,11 +6,62 @@ import { Card, CardContent } from '@/components/ui/Card'
 import { Property } from '@/types'
 import { formatPrice, formatArea } from '@/lib/utils'
 
+// Lazy Image Component
+const LazyImage: React.FC<{
+  src: string;
+  alt: string;
+  className?: string;
+  onLoad?: () => void;
+}> = ({ src, alt, className, onLoad }) => {
+  const [isLoaded, setIsLoaded] = useState(false);
+  const [isInView, setIsInView] = useState(false);
+  const imgRef = useRef<HTMLImageElement>(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsInView(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    if (imgRef.current) {
+      observer.observe(imgRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <div ref={imgRef} className={className}>
+      {isInView && (
+        <img
+          src={src}
+          alt={alt}
+          className={`transition-opacity duration-300 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}
+          onLoad={() => {
+            setIsLoaded(true);
+            onLoad?.();
+          }}
+          loading="lazy"
+        />
+      )}
+      {!isLoaded && isInView && (
+        <div className="animate-pulse bg-gray-200 w-full h-full" />
+      )}
+    </div>
+  );
+};
+
 interface PropertyCardProps {
   property: Property
 }
 
-const PropertyCard: React.FC<PropertyCardProps> = ({ property }) => {
+// Memoized PropertyCard component
+const PropertyCard = React.memo<PropertyCardProps>(({ property }) => {
   const {
     id,
     title,
@@ -30,11 +81,9 @@ const PropertyCard: React.FC<PropertyCardProps> = ({ property }) => {
     <Card className="overflow-hidden hover:shadow-lg transition-shadow duration-300">
       <Link href={`/properties/${id}`}>
         <div className="relative">
-          <Image
-            src={primaryImage}
-            alt={title}
-            width={400}
-            height={250}
+          <LazyImage
+            src={property.images?.[0] || '/placeholder-property.jpg'}
+            alt={property.title}
             className="w-full h-48 object-cover"
           />
           <div className="absolute top-3 left-3">
@@ -111,6 +160,8 @@ const PropertyCard: React.FC<PropertyCardProps> = ({ property }) => {
       </CardContent>
     </Card>
   )
-}
+})
 
-export default PropertyCard
+export default PropertyCard;
+
+PropertyCard.displayName = 'PropertyCard';

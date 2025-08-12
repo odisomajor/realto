@@ -28,7 +28,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth';
 import { userApi, authApi } from '@/lib/api';
-import { TwoFactorSetup } from '@/components/auth/TwoFactorSetup';
+import TwoFactorSetup from '@/components/auth/TwoFactorSetup';
 
 interface UserProfile {
   id: string;
@@ -177,7 +177,7 @@ export default function ProfilePage() {
 
   const handleResendVerification = async () => {
     try {
-      await authApi.resendVerification();
+      await authApi.resendVerification(profile?.email || '');
       setMessage('Verification email sent successfully!');
       setTimeout(() => setMessage(''), 3000);
     } catch (error: any) {
@@ -526,7 +526,7 @@ export default function ProfilePage() {
                     // Refresh profile to get updated 2FA status
                     window.location.reload();
                   }}
-                  onCancel={() => setShowTwoFactorSetup(false)}
+                  onSkip={() => setShowTwoFactorSetup(false)}
                 />
               </div>
             </div>

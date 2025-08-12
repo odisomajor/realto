@@ -460,7 +460,12 @@ export default function PropertyFormWizard({
               <div className="border rounded-lg overflow-hidden">
                 <LocationPicker
                   onLocationSelect={handleLocationSelect}
-                  initialLocation={formData.coordinates}
+                  initialLocation={formData.coordinates ? {
+                    address: formData.address,
+                    coordinates: formData.coordinates,
+                    county: formData.county,
+                    city: formData.city
+                  } : undefined}
                   height="300px"
                 />
               </div>

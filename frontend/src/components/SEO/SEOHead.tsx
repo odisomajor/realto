@@ -23,7 +23,7 @@ interface SEOProps {
       lat: number;
       lng: number;
     };
-  };
+  } | null;
   noIndex?: boolean;
 }
 

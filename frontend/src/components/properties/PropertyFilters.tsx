@@ -21,22 +21,14 @@ import {
 } from 'lucide-react';
 
 interface PropertyFiltersProps {
-  filters: {
-    type: 'all' | 'sale' | 'rent' | 'upcoming';
-    category: 'all' | 'residential' | 'commercial' | 'land';
-    priceRange: [number, number];
-    bedrooms: number;
-    bathrooms: number;
-    area: [number, number];
-    location: string;
-    features: string[];
-  };
-  onFiltersChange: (filters: any) => void;
+  onFiltersChange: (filters: PropertyFilters) => void;
+  initialFilters?: Partial<PropertyFilters>;
+  className?: string;
 }
 
 export interface PropertyFilters {
   search: string;
-  type: 'all' | 'sale' | 'rent';
+  type: 'all' | 'sale' | 'rent' | 'upcoming';
   category: 'all' | 'residential' | 'commercial' | 'land';
   priceMin: string;
   priceMax: string;

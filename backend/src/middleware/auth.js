@@ -13,7 +13,12 @@ const authenticateToken = async (req, res, next) => {
 
   try {
     // Verify the JWT token
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
+    const jwtSecret = process.env.JWT_SECRET;
+    if (!jwtSecret) {
+      console.error('JWT_SECRET environment variable is not configured');
+      return res.status(500).json({ error: 'Server configuration error' });
+    }
+    const decoded = jwt.verify(token, jwtSecret);
     
     // Get user from database
     const user = await prisma.user.findUnique({

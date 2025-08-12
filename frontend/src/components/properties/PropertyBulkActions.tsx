@@ -287,29 +287,31 @@ export default function PropertyBulkActions({
 
             {/* More Actions Dropdown */}
             <DropdownMenu>
-              <DropdownMenuTrigger asChild>
+              <DropdownMenuTrigger>
                 <Button size="sm" variant="outline" disabled={isLoading}>
                   More Actions
                   <ChevronDown className="h-4 w-4 ml-1" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-48">
-                <DropdownMenuItem
-                  onClick={() => openConfirmDialog('feature')}
-                  disabled={!canFeature}
-                  className="flex items-center gap-2"
-                >
-                  <Star className="h-4 w-4" />
-                  Feature Properties
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => openConfirmDialog('unfeature')}
-                  disabled={!canUnfeature}
-                  className="flex items-center gap-2"
-                >
-                  <StarOff className="h-4 w-4" />
-                  Remove Featured
-                </DropdownMenuItem>
+                {canFeature && (
+                  <DropdownMenuItem
+                    onClick={() => openConfirmDialog('feature')}
+                    className="flex items-center gap-2"
+                  >
+                    <Star className="h-4 w-4" />
+                    Feature Properties
+                  </DropdownMenuItem>
+                )}
+                {canUnfeature && (
+                  <DropdownMenuItem
+                    onClick={() => openConfirmDialog('unfeature')}
+                    className="flex items-center gap-2"
+                  >
+                    <StarOff className="h-4 w-4" />
+                    Remove Featured
+                  </DropdownMenuItem>
+                )}
                 
                 <DropdownMenuSeparator />
                 

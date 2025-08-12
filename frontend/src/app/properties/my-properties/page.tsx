@@ -45,11 +45,13 @@ interface PropertyStats {
   inquiries: number
   favorites: number
   lastViewed?: string
+  conversionRate: number
+  avgTimeOnPage: number
 }
 
 interface EnhancedProperty extends Omit<Property, 'status'> {
   stats?: PropertyStats
-  status: 'active' | 'inactive' | 'sold' | 'rented'
+  status: 'active' | 'inactive' | 'sold' | 'rented' | 'pending'
 }
 
 export default function MyPropertiesPage() {
@@ -81,12 +83,14 @@ export default function MyPropertiesPage() {
       // Enhance properties with mock stats for demo
       const enhancedProperties = response.data.data.map((property: Property) => ({
         ...property,
-        status: Math.random() > 0.8 ? 'sold' : Math.random() > 0.6 ? 'inactive' : 'active',
+        status: Math.random() > 0.9 ? 'pending' : Math.random() > 0.8 ? 'sold' : Math.random() > 0.6 ? 'inactive' : 'active',
         stats: {
           views: Math.floor(Math.random() * 500) + 10,
           inquiries: Math.floor(Math.random() * 20) + 1,
           favorites: Math.floor(Math.random() * 50) + 1,
-          lastViewed: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000).toISOString()
+          lastViewed: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000).toISOString(),
+          conversionRate: Math.random() * 10,
+          avgTimeOnPage: Math.floor(Math.random() * 300) + 60
         }
       }))
       
@@ -132,7 +136,8 @@ export default function MyPropertiesPage() {
       active: { label: 'Active', className: 'bg-green-100 text-green-800' },
       inactive: { label: 'Inactive', className: 'bg-gray-100 text-gray-800' },
       sold: { label: 'Sold', className: 'bg-blue-100 text-blue-800' },
-      rented: { label: 'Rented', className: 'bg-purple-100 text-purple-800' }
+      rented: { label: 'Rented', className: 'bg-purple-100 text-purple-800' },
+      pending: { label: 'Pending', className: 'bg-yellow-100 text-yellow-800' }
     }
     
     const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.active
@@ -282,35 +287,35 @@ export default function MyPropertiesPage() {
             {/* Bulk Actions */}
             {selectedProperties.length > 0 && (
               <PropertyBulkActions
-                selectedProperties={selectedProperties}
-                onBulkAction={async (action: string, propertyIds: string[]) => {
-                  try {
-                    switch (action) {
-                      case 'delete':
-                        if (window.confirm(`Are you sure you want to delete ${propertyIds.length} properties?`)) {
-                          await Promise.all(propertyIds.map(id => propertyApi.deleteProperty(id)));
-                          setProperties(properties.filter(p => !propertyIds.includes(p.id)));
-                          setSelectedProperties([]);
-                        }
-                        break;
-                      case 'activate':
-                        setProperties(properties.map(p => 
-                          propertyIds.includes(p.id) ? { ...p, status: 'active' } : p
-                        ));
-                        setSelectedProperties([]);
-                        break;
-                      case 'deactivate':
-                        setProperties(properties.map(p => 
-                          propertyIds.includes(p.id) ? { ...p, status: 'inactive' } : p
-                        ));
-                        setSelectedProperties([]);
-                        break;
-                    }
-                  } catch (error) {
-                    console.error('Error performing bulk action:', error);
+                selectedProperties={properties
+                  .filter(p => selectedProperties.includes(p.id))
+                  .map(p => ({
+                    id: p.id,
+                    title: p.title,
+                    status: p.status.toUpperCase() as 'ACTIVE' | 'INACTIVE' | 'PENDING' | 'SOLD' | 'RENTED',
+                    featured: p.featured || false,
+                    price: p.price,
+                    propertyType: p.category,
+                    listingType: p.type.toUpperCase()
+                  }))}
+                onClearSelection={() => setSelectedProperties([])}
+                onBulkUpdate={async (propertyIds: string[], updates: any) => {
+                  setProperties(properties.map(p => 
+                    propertyIds.includes(p.id) ? { ...p, ...updates } : p
+                  ));
+                  setSelectedProperties([]);
+                }}
+                onBulkDelete={async (propertyIds: string[]) => {
+                  if (window.confirm(`Are you sure you want to delete ${propertyIds.length} properties?`)) {
+                    await Promise.all(propertyIds.map(id => propertyApi.deleteProperty(id)));
+                    setProperties(properties.filter(p => !propertyIds.includes(p.id)));
+                    setSelectedProperties([]);
                   }
                 }}
-                onClearSelection={() => setSelectedProperties([])}
+                onBulkDuplicate={async (propertyIds: string[]) => {
+                  // Implement duplication logic here
+                  console.log('Duplicating properties:', propertyIds);
+                }}
               />
             )}
 
@@ -594,34 +599,8 @@ export default function MyPropertiesPage() {
           <TabsContent value="dashboard">
             <PropertyManagementDashboard
               properties={properties}
-              onPropertyUpdate={(updatedProperty) => {
-                setProperties(properties.map(p => 
-                  p.id === updatedProperty.id ? updatedProperty : p
-                ));
-              }}
-              onBulkAction={async (action: string, propertyIds: string[]) => {
-                try {
-                  switch (action) {
-                    case 'delete':
-                      if (window.confirm(`Are you sure you want to delete ${propertyIds.length} properties?`)) {
-                        await Promise.all(propertyIds.map(id => propertyApi.deleteProperty(id)));
-                        setProperties(properties.filter(p => !propertyIds.includes(p.id)));
-                      }
-                      break;
-                    case 'activate':
-                      setProperties(properties.map(p => 
-                        propertyIds.includes(p.id) ? { ...p, status: 'active' } : p
-                      ));
-                      break;
-                    case 'deactivate':
-                      setProperties(properties.map(p => 
-                        propertyIds.includes(p.id) ? { ...p, status: 'inactive' } : p
-                      ));
-                      break;
-                  }
-                } catch (error) {
-                  console.error('Error performing bulk action:', error);
-                }
+              onPropertiesUpdate={(updatedProperties) => {
+                setProperties(updatedProperties);
               }}
             />
           </TabsContent>

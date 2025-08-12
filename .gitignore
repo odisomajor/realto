@@ -143,3 +143,11 @@ docker-compose.override.yml
 .local/
 temp/
 tmp/
+
+# SSH Keys
+*.pem
+*.key
+*_key
+*_key.pub
+new_key*
+key.pub

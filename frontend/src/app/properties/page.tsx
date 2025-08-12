@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect, useCallback, Suspense } from 'react';
+import { useState, useEffect, useCallback, Suspense, useMemo } from 'react';
+import { debounce } from 'lodash';
 import PropertyFilters, { PropertyFilters as PropertyFiltersType } from '@/components/properties/PropertyFilters';
 import { propertyApi, geocodingApi } from '@/lib/api';
 import PropertyCard from '@/components/properties/PropertyCard';
@@ -101,157 +102,169 @@ function PropertiesPageContent() {
     }
   }, [searchParams])
 
-  useEffect(() => {
-    fetchProperties();
-  }, []);
-
-  // Apply filters when currentFilters change
-  useEffect(() => {
-    if (properties.length > 0) {
-      handleSearch(currentFilters);
-    }
-  }, [currentFilters, properties]);
-
   const fetchProperties = async () => {
     try {
       setLoading(true);
+      setError(null);
       const response = await propertyApi.getProperties();
-      const propertiesData = response.data.data || [];
-      setProperties(propertiesData);
-      setFilteredProperties(propertiesData);
-    } catch (err) {
-      setError('Failed to fetch properties');
-      console.error('Error fetching properties:', err);
+      setProperties(response.data);
+      setFilteredProperties(response.data);
+    } catch (error) {
+      console.error('Error fetching properties:', error);
+      setError('Failed to load properties. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleSearch = useCallback(async (filters: PropertyFiltersType) => {
-    try {
-      setCurrentFilters(filters);
-      let filtered = [...properties];
+  useEffect(() => {
+    fetchProperties();
+  }, []);
 
-      // Text search filter
-      if (filters.search) {
-        const query = filters.search.toLowerCase();
-        filtered = filtered.filter(property =>
-          property.title.toLowerCase().includes(query) ||
-          property.location.toLowerCase().includes(query) ||
-          property.description.toLowerCase().includes(query) ||
-          property.features.some(feature => feature.toLowerCase().includes(query))
-        );
-      }
+  // Memoized filtering function
+  const filterProperties = useCallback((filters: PropertyFiltersType) => {
+    let filtered = [...properties];
 
-      // Property type filter
-      if (filters.type && filters.type !== 'all') {
-        filtered = filtered.filter(property => property.type === filters.type);
-      }
-
-      // Category filter
-      if (filters.category && filters.category !== 'all') {
-        filtered = filtered.filter(property => property.category === filters.category);
-      }
-
-      // Price filters
-      if (filters.priceMin || filters.priceMax) {
-        if (filters.priceMin) {
-          const minPrice = parseFloat(filters.priceMin);
-          if (!isNaN(minPrice)) {
-            filtered = filtered.filter(property => property.price >= minPrice);
-          }
-        }
-        if (filters.priceMax) {
-          const maxPrice = parseFloat(filters.priceMax);
-          if (!isNaN(maxPrice)) {
-            filtered = filtered.filter(property => property.price <= maxPrice);
-          }
-        }
-      }
-
-      // Bedroom filter
-      if (filters.bedrooms) {
-        const bedroomCount = parseInt(filters.bedrooms);
-        if (!isNaN(bedroomCount)) {
-          filtered = filtered.filter(property => property.bedrooms >= bedroomCount);
-        }
-      }
-
-      // Bathroom filter
-      if (filters.bathrooms) {
-        const bathroomCount = parseInt(filters.bathrooms);
-        if (!isNaN(bathroomCount)) {
-          filtered = filtered.filter(property => property.bathrooms >= bathroomCount);
-        }
-      }
-
-      // Area filter
-      if (filters.areaMin || filters.areaMax) {
-        if (filters.areaMin) {
-          const minArea = parseFloat(filters.areaMin);
-          if (!isNaN(minArea)) {
-            filtered = filtered.filter(property => property.area >= minArea);
-          }
-        }
-        if (filters.areaMax) {
-          const maxArea = parseFloat(filters.areaMax);
-          if (!isNaN(maxArea)) {
-            filtered = filtered.filter(property => property.area <= maxArea);
-          }
-        }
-      }
-
-      // County filter
-      if (filters.county) {
-        filtered = filtered.filter(property => 
-          property.location.toLowerCase().includes(filters.county!.toLowerCase())
-        );
-      }
-
-      // Features filter
-      if (filters.features && filters.features.length > 0) {
-        filtered = filtered.filter(property =>
-          filters.features!.every(feature => property.features.includes(feature))
-        );
-      }
-
-      // Location-based filtering with radius
-      if (filters.location && filters.location.trim()) {
-        // For now, just filter by location string match
-        // In a real app, you'd use coordinates and radius
-        filtered = filtered.filter(property => 
-          property.location.toLowerCase().includes(filters.location.toLowerCase())
-        );
-      }
-
-      // Sorting
-      if (filters.sortBy) {
-        filtered.sort((a, b) => {
-          switch (filters.sortBy) {
-            case 'price-low':
-              return a.price - b.price;
-            case 'price-high':
-              return b.price - a.price;
-            case 'oldest':
-              return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
-            case 'newest':
-              return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-            case 'area-large':
-              return b.area - a.area;
-            case 'area-small':
-              return a.area - b.area;
-            default:
-              return 0;
-          }
-        });
-      }
-
-      setFilteredProperties(filtered);
-    } catch (error) {
-      console.error('Search error:', error);
-      setError('Failed to apply search filters');
+    // Text search filter
+    if (filters.search) {
+      const query = filters.search.toLowerCase();
+      filtered = filtered.filter(property =>
+        property.title.toLowerCase().includes(query) ||
+        property.location.toLowerCase().includes(query) ||
+        property.description.toLowerCase().includes(query) ||
+        property.features.some(feature => feature.toLowerCase().includes(query))
+      );
     }
+
+    // Property type filter
+    if (filters.type && filters.type !== 'all') {
+      filtered = filtered.filter(property => property.type === filters.type);
+    }
+
+    // Category filter
+    if (filters.category && filters.category !== 'all') {
+      filtered = filtered.filter(property => property.category === filters.category);
+    }
+
+    // Price filters
+    if (filters.priceMin || filters.priceMax) {
+      if (filters.priceMin) {
+        const minPrice = parseFloat(filters.priceMin);
+        if (!isNaN(minPrice)) {
+          filtered = filtered.filter(property => property.price >= minPrice);
+        }
+      }
+      if (filters.priceMax) {
+        const maxPrice = parseFloat(filters.priceMax);
+        if (!isNaN(maxPrice)) {
+          filtered = filtered.filter(property => property.price <= maxPrice);
+        }
+      }
+    }
+
+    // Bedroom filter
+    if (filters.bedrooms) {
+      const bedroomCount = parseInt(filters.bedrooms);
+      if (!isNaN(bedroomCount)) {
+        filtered = filtered.filter(property => property.bedrooms >= bedroomCount);
+      }
+    }
+
+    // Bathroom filter
+    if (filters.bathrooms) {
+      const bathroomCount = parseInt(filters.bathrooms);
+      if (!isNaN(bathroomCount)) {
+        filtered = filtered.filter(property => property.bathrooms >= bathroomCount);
+      }
+    }
+
+    // Area filter
+    if (filters.areaMin || filters.areaMax) {
+      if (filters.areaMin) {
+        const minArea = parseFloat(filters.areaMin);
+        if (!isNaN(minArea)) {
+          filtered = filtered.filter(property => property.area >= minArea);
+        }
+      }
+      if (filters.areaMax) {
+        const maxArea = parseFloat(filters.areaMax);
+        if (!isNaN(maxArea)) {
+          filtered = filtered.filter(property => property.area <= maxArea);
+        }
+      }
+    }
+
+    // County filter
+    if (filters.county) {
+      filtered = filtered.filter(property => 
+        property.location.toLowerCase().includes(filters.county!.toLowerCase())
+      );
+    }
+
+    // Features filter
+    if (filters.features && filters.features.length > 0) {
+      filtered = filtered.filter(property =>
+        filters.features!.every(feature => property.features.includes(feature))
+      );
+    }
+
+    // Location-based filtering with radius
+    if (filters.location && filters.location.trim()) {
+      // For now, just filter by location string match
+      // In a real app, you'd use coordinates and radius
+      filtered = filtered.filter(property => 
+        property.location.toLowerCase().includes(filters.location.toLowerCase())
+      );
+    }
+
+    // Sorting
+    if (filters.sortBy) {
+      filtered.sort((a, b) => {
+        switch (filters.sortBy) {
+          case 'price-low':
+            return a.price - b.price;
+          case 'price-high':
+            return b.price - a.price;
+          case 'oldest':
+            return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+          case 'newest':
+            return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+          case 'area-large':
+            return b.area - a.area;
+          case 'area-small':
+            return a.area - b.area;
+          default:
+            return 0;
+        }
+      });
+    }
+
+    return filtered;
   }, [properties]);
+
+  // Debounced search handler
+  const debouncedSearch = useMemo(
+    () => debounce((filters: PropertyFiltersType) => {
+      const filtered = filterProperties(filters);
+      setFilteredProperties(filtered);
+    }, 300),
+    [filterProperties]
+  );
+
+  // Apply filters when currentFilters change
+  useEffect(() => {
+    if (properties.length > 0) {
+      debouncedSearch(currentFilters);
+    }
+    
+    return () => {
+      debouncedSearch.cancel();
+    };
+  }, [currentFilters, properties, debouncedSearch]);
+
+  const handleSearch = useCallback((filters: PropertyFiltersType) => {
+    setCurrentFilters(filters);
+  }, []);
 
   if (loading) {
     return (
@@ -280,7 +293,6 @@ function PropertiesPageContent() {
       <SEOHead 
         title="Properties for Sale & Rent in Kenya"
         description="Browse thousands of properties for sale and rent in Kenya. Find houses, apartments, land, and commercial properties in Nairobi, Mombasa, Kisumu, and other major cities."
-        canonical="https://xillix.co.ke/properties"
       />
       
       <div className="container mx-auto px-4 py-8">

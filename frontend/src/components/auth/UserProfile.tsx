@@ -97,6 +97,7 @@ export default function UserProfile({ onClose }: UserProfileProps) {
       const response = await authApi.changePassword({
         currentPassword: passwordData.currentPassword,
         newPassword: passwordData.newPassword,
+        confirmPassword: passwordData.confirmPassword,
       });
 
       setSuccessMessage('Password changed successfully!');

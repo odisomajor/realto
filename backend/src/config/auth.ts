@@ -41,8 +41,20 @@ export interface AuthConfig {
 
 const authConfig: AuthConfig = {
   jwt: {
-    secret: process.env.JWT_SECRET || 'your-super-secret-jwt-key',
-    refreshSecret: process.env.JWT_REFRESH_SECRET || 'your-super-secret-refresh-key',
+    secret: (() => {
+      const secret = process.env.JWT_SECRET;
+      if (!secret) {
+        throw new Error('JWT_SECRET environment variable is required');
+      }
+      return secret;
+    })(),
+    refreshSecret: (() => {
+      const secret = process.env.JWT_REFRESH_SECRET;
+      if (!secret) {
+        throw new Error('JWT_REFRESH_SECRET environment variable is required');
+      }
+      return secret;
+    })(),
     algorithm: 'HS256',
     accessTokenExpiry: process.env.JWT_EXPIRES_IN || '15m',
     refreshTokenExpiry: process.env.JWT_REFRESH_EXPIRES_IN || '7d',

@@ -206,7 +206,9 @@ export default function PropertyStatusManager({
 
   const getAvailableReasons = () => {
     if (!selectedStatus) return [];
-    return CHANGE_REASONS[currentStatus]?.[selectedStatus as PropertyStatus['status']] || [];
+    const currentReasons = CHANGE_REASONS[currentStatus as keyof typeof CHANGE_REASONS];
+    if (!currentReasons) return [];
+    return currentReasons[selectedStatus as keyof typeof currentReasons] || [];
   };
 
   return (
@@ -398,7 +400,7 @@ export default function PropertyStatusManager({
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 New Status
               </label>
-              <Select value={selectedStatus} onValueChange={setSelectedStatus}>
+              <Select value={selectedStatus} onValueChange={(value) => setSelectedStatus(value as PropertyStatus['status'] | '')}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select new status" />
                 </SelectTrigger>

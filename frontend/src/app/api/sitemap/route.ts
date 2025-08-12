@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
     ];
 
     // Fetch properties from API
-    let properties = [];
+    let properties: any[] = [];
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
       const response = await fetch(`${apiUrl}/properties`, {
@@ -36,11 +36,17 @@ export async function GET(request: NextRequest) {
       
       if (response.ok) {
         const data = await response.json();
-        properties = data.properties || data || [];
+        properties = Array.isArray(data.properties) ? data.properties : 
+                    Array.isArray(data) ? data : [];
       }
     } catch (error) {
       console.error('Error fetching properties for sitemap:', error);
-      // Continue with empty properties array
+      properties = []; // Ensure it's always an array
+    }
+
+    // Ensure properties is always an array before using .map()
+    if (!Array.isArray(properties)) {
+      properties = [];
     }
 
     // Generate sitemap XML
@@ -70,10 +76,10 @@ export async function GET(request: NextRequest) {
           <lastmod>${property.updatedAt || property.createdAt || new Date().toISOString()}</lastmod>
           <changefreq>weekly</changefreq>
           <priority>0.7</priority>
-          ${property.images && property.images.length > 0 ? 
-            property.images.map((image: string) => `
+          ${property.images && typeof property.images === 'string' && property.images.trim() ? 
+            property.images.split(' ').filter(Boolean).map((image: string) => `
           <image:image>
-            <image:loc>${baseUrl}${image}</image:loc>
+            <image:loc>${image}</image:loc>
             <image:title>${property.title}</image:title>
             <image:caption>${property.description || property.title}</image:caption>
           </image:image>`).join('') : ''

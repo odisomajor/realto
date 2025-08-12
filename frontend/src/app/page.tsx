@@ -168,7 +168,6 @@ export default function Home() {
       <SEOHead 
         title="Xillix - Kenya Real Estate Portal | Properties for Sale & Rent"
         description="Find your dream property in Kenya. Browse houses, land, commercial properties, warehouses, and rentals. Trusted real estate platform with verified listings across Nairobi, Mombasa, Kisumu, and all major cities."
-        canonical="https://xillix.co.ke"
       />
       
       <Hero />
