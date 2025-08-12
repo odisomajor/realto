@@ -28,7 +28,7 @@ interface PropertyFiltersProps {
 
 export interface PropertyFilters {
   search: string;
-  type: 'all' | 'sale' | 'rent' | 'upcoming';
+  type: 'all' | 'sale' | 'rent';
   category: 'all' | 'residential' | 'commercial' | 'land';
   priceMin: string;
   priceMax: string;
@@ -90,7 +90,7 @@ export default function PropertyFilters({ onFiltersChange, initialFilters, class
       if (key === 'features') {
         return acc + (value as string[]).length;
       }
-      if (key === 'sortBy') return acc; // Don't count sort as active filter
+      if (key === 'sortBy' || key === 'radius') return acc; // Don't count sort or radius as active filter
       return acc + (value && value !== 'all' && value !== '' ? 1 : 0);
     }, 0);
     setActiveFiltersCount(count);
@@ -171,13 +171,7 @@ export default function PropertyFilters({ onFiltersChange, initialFilters, class
           >
             For Rent
           </Button>
-          <Button
-            variant={filters.type === 'upcoming' ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => handleFilterChange('type', filters.type === 'upcoming' ? 'all' : 'upcoming')}
-          >
-            Upcoming Projects
-          </Button>
+
           <Button
             variant={filters.category === 'residential' ? 'default' : 'outline'}
             size="sm"

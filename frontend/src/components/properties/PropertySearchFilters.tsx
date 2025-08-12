@@ -61,7 +61,6 @@ const categories = [
 const listingTypes = [
   { value: 'SALE', label: 'For Sale' },
   { value: 'RENT', label: 'For Rent' },
-  { value: 'UPCOMING', label: 'Upcoming Projects' },
   { value: 'LEASE', label: 'For Lease' }
 ];
 

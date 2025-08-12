@@ -210,17 +210,16 @@ export type ActivityType =
 
 // User Statistics
 export interface UserStats {
+  userId: string;
   totalProperties: number;
   activeProperties: number;
   soldProperties: number;
   totalInquiries: number;
-  totalAppointments: number;
   totalFavorites: number;
-  totalReviews: number;
   averageRating: number;
   totalViews: number;
-  joinDate: Date;
-  lastActive?: Date;
+  responseRate: number;
+  averageResponseTime: number;
 }
 
 // Agent Performance Metrics

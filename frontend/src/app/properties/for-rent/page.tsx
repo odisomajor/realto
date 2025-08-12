@@ -20,7 +20,7 @@ interface Property {
   bedrooms: number;
   bathrooms: number;
   area: number;
-  type: 'sale' | 'rent' | 'upcoming';
+  type: 'sale' | 'rent';
   category: 'residential' | 'commercial' | 'land';
   status: 'available' | 'sold' | 'rented' | 'pending' | 'under-construction';
   features: string[];
@@ -67,7 +67,7 @@ function ForRentPageContent() {
       setLoading(true);
       setError(null);
       const response = await propertyApi.getProperties();
-      const rentProperties = response.data.filter((property: Property) => 
+      const rentProperties = response.data.data.filter((property: Property) => 
         property.type === 'rent'
       );
       setProperties(rentProperties);

@@ -43,16 +43,14 @@ export class UserService {
             }
           },
           _count: {
-            select: {
-              properties: true,
-              reviews: true,
-              inquiries: true,
-              appointments: true,
-              favorites: true
-            }
+          select: {
+            properties: true,
+            inquiries: true,
+            favorites: true
           }
         }
-      });
+        }
+      }) as any;
 
       if (!user) {
         throw new AppError('User not found', 404);
@@ -85,7 +83,7 @@ export class UserService {
         updatedAt: user.updatedAt,
         stats: {
           propertiesCount: user._count.properties,
-          reviewsCount: user._count.reviews,
+          // reviewsCount: 0, // Reviews not implemented in current schema
           inquiriesCount: user._count.inquiries,
           appointmentsCount: user._count.appointments,
           favoritesCount: user._count.favorites
@@ -133,16 +131,14 @@ export class UserService {
             }
           },
           _count: {
-            select: {
-              properties: true,
-              reviews: true,
-              inquiries: true,
-              appointments: true,
-              favorites: true
-            }
+          select: {
+            properties: true,
+            inquiries: true,
+            favorites: true
           }
         }
-      });
+        }
+      }) as any;
 
       // Clear cache
       await redis.del(`user:profile:${userId}`);
@@ -169,11 +165,16 @@ export class UserService {
         createdAt: updatedUser.createdAt,
         updatedAt: updatedUser.updatedAt,
         stats: {
-          propertiesCount: updatedUser._count.properties,
-          reviewsCount: updatedUser._count.reviews,
-          inquiriesCount: updatedUser._count.inquiries,
-          appointmentsCount: updatedUser._count.appointments,
-          favoritesCount: updatedUser._count.favorites
+          userId: updatedUser.id,
+          totalProperties: updatedUser._count.properties || 0,
+          activeProperties: 0, // TODO: Calculate from properties where status = 'ACTIVE'
+          soldProperties: 0, // TODO: Calculate from properties where status = 'SOLD'
+          totalInquiries: updatedUser._count.inquiries || 0,
+          totalFavorites: updatedUser._count.favorites || 0,
+          averageRating: 0, // TODO: Calculate from reviews
+          totalViews: 0, // TODO: Calculate from property views
+          responseRate: 0, // TODO: Calculate response rate
+          averageResponseTime: 0 // TODO: Calculate average response time
         }
       };
 
@@ -197,28 +198,26 @@ export class UserService {
         sms: false,
         push: true,
         marketing: false,
-        newListings: true,
+        newInquiries: true,
+        appointmentReminders: true,
+        propertyUpdates: true,
         priceChanges: true,
-        appointments: true,
-        inquiries: true,
-        reviews: true,
+        newReviews: true,
         systemUpdates: false
       },
       displaySettings: {
         theme: 'light',
         language: 'en',
         currency: 'USD',
-        timezone: 'UTC',
         dateFormat: 'MM/DD/YYYY',
         measurementUnit: 'imperial'
       },
       privacySettings: {
         showEmail: false,
         showPhone: false,
+        showLastSeen: false,
         allowDirectMessages: true,
-        showOnlineStatus: true,
-        allowProfileViewing: true,
-        showActivityStatus: false
+        profileVisibility: 'public'
       }
     };
   }
@@ -243,30 +242,27 @@ export class UserService {
             select: {
               properties: true,
               inquiries: true,
-              appointments: true,
-              favorites: true,
-              reviews: true
+              favorites: true
             }
           }
         }
-      });
+      }) as any;
 
       if (!user) {
         throw new AppError('User not found', 404);
       }
 
       return {
+        userId: user.id,
         totalProperties: user._count.properties,
         activeProperties: 0, // TODO: Count active properties
         soldProperties: 0, // TODO: Count sold properties
         totalInquiries: user._count.inquiries,
-        totalAppointments: user._count.appointments,
         totalFavorites: user._count.favorites,
-        totalReviews: user._count.reviews,
         averageRating: 0, // TODO: Calculate from reviews
         totalViews: 0, // TODO: Calculate from property views
-        joinDate: user.createdAt,
-        lastActive: user.lastLoginAt
+        responseRate: 0, // TODO: Calculate response rate
+        averageResponseTime: 0 // TODO: Calculate average response time
       };
     } catch (error) {
       logger.error('Error getting user stats:', error);

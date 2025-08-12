@@ -40,7 +40,7 @@ interface Property {
   bedrooms: number;
   bathrooms: number;
   area: number;
-  type: 'sale' | 'rent' | 'upcoming';
+  type: 'sale' | 'rent';
   category: 'residential' | 'commercial' | 'land';
   status: 'available' | 'sold' | 'rented' | 'pending' | 'under-construction';
   features: string[];
@@ -87,10 +87,17 @@ function PropertiesPageContent() {
     const typeParam = searchParams.get('type')
     const categoryParam = searchParams.get('category')
     
-    if (typeParam && (typeParam === 'sale' || typeParam === 'rent' || typeParam === 'upcoming')) {
+    // Set type filter - default to 'all' if no valid type parameter is provided
+    if (typeParam && (typeParam === 'sale' || typeParam === 'rent')) {
       setCurrentFilters(prev => ({
         ...prev,
         type: typeParam
+      }))
+    } else {
+      // Explicitly set to 'all' when no type parameter or invalid type parameter
+      setCurrentFilters(prev => ({
+        ...prev,
+        type: 'all'
       }))
     }
     
@@ -107,8 +114,8 @@ function PropertiesPageContent() {
       setLoading(true);
       setError(null);
       const response = await propertyApi.getProperties();
-      setProperties(response.data);
-      setFilteredProperties(response.data);
+      setProperties(response.data.data);
+      setFilteredProperties(response.data.data);
     } catch (error) {
       console.error('Error fetching properties:', error);
       setError('Failed to load properties. Please try again.');
@@ -358,7 +365,7 @@ function PropertiesPageContent() {
         <div className="flex justify-between items-center mb-6">
           <div className="flex items-center gap-4">
             <span className="text-gray-600">
-              {filteredProperties.length} properties found
+              {Array.isArray(filteredProperties) ? filteredProperties.length : 0} properties found
               {currentFilters.location && (
                 <span className="text-sm text-gray-500 ml-2">
                   in {currentFilters.location}
@@ -396,7 +403,7 @@ function PropertiesPageContent() {
         {/* Content */}
         {viewMode === 'list' ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredProperties.map((property) => (
+            {Array.isArray(filteredProperties) && filteredProperties.map((property) => (
               <div key={property.id} className="relative">
                 <PropertyCard property={property} />
                 {property.distance !== undefined && property.distance < Infinity && (
@@ -410,7 +417,7 @@ function PropertiesPageContent() {
         ) : (
           <div className="bg-white rounded-lg shadow-md overflow-hidden">
             <GoogleMap
-              properties={filteredProperties}
+              properties={Array.isArray(filteredProperties) ? filteredProperties : []}
               height="600px"
               showSearch={false}
               center={undefined}
@@ -418,7 +425,7 @@ function PropertiesPageContent() {
           </div>
         )}
 
-        {filteredProperties.length === 0 && (
+        {Array.isArray(filteredProperties) && filteredProperties.length === 0 && (
           <div className="text-center py-12">
             <p className="text-gray-500 text-lg">No properties found matching your criteria.</p>
             <Button onClick={() => handleSearch({

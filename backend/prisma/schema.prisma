@@ -86,7 +86,7 @@ model Property {
   // Basic Info
   propertyType String // HOUSE, APARTMENT, COMMERCIAL, LAND, WAREHOUSE, CONTAINER
   listingType  String // FOR_SALE, FOR_RENT
-  status       String       @default("ACTIVE") // ACTIVE, SOLD, RENTED, PENDING, INACTIVE
+  status       String @default("ACTIVE") // ACTIVE, SOLD, RENTED, PENDING, INACTIVE
 
   // Pricing
   price    Float
@@ -145,7 +145,7 @@ model Inquiry {
   user       User?    @relation(fields: [userId], references: [id])
 
   // Status
-  status String @default("NEW") // NEW, CONTACTED, CLOSED
+  status String @default("PENDING") // PENDING, RESPONDED, CLOSED
 
   // Timestamps
   createdAt DateTime @default(now())

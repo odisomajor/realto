@@ -63,7 +63,7 @@ export default function PropertyRecommendations() {
               type: 'sale',
               category: 'residential',
               status: 'available',
-              images: ['https://picsum.photos/400/300?random=40'],
+              images: ['/images/property-1.jpg'],
               features: ['Parking', 'Swimming Pool', 'Gym', 'Security'],
               agent: {
                 id: '1',
@@ -87,7 +87,7 @@ export default function PropertyRecommendations() {
               type: 'sale',
               category: 'residential',
               status: 'available',
-              images: ['https://picsum.photos/400/300?random=41'],
+              images: ['/images/property-2.jpg'],
               features: ['Parking', 'Balcony', 'Security', 'Elevator'],
               agent: {
                 id: '2',
@@ -120,7 +120,7 @@ export default function PropertyRecommendations() {
               type: 'sale',
               category: 'residential',
               status: 'available',
-              images: ['https://picsum.photos/400/300?random=42'],
+              images: ['/images/property-3.jpg'],
               features: ['Garden', 'Parking', 'Security'],
               agent: {
                 id: '3',
@@ -153,7 +153,7 @@ export default function PropertyRecommendations() {
               type: 'sale',
               category: 'residential',
               status: 'available',
-              images: ['https://picsum.photos/400/300?random=43'],
+              images: ['/images/property-1.jpg'],
               features: ['Swimming Pool', 'Garden', 'Gym', 'Security'],
               agent: {
                 id: '4',
@@ -186,7 +186,7 @@ export default function PropertyRecommendations() {
               type: 'sale',
               category: 'residential',
               status: 'available',
-              images: ['https://picsum.photos/400/300?random=44'],
+              images: ['/images/property-2.jpg'],
               features: ['Parking', 'Security', 'Modern Kitchen'],
               agent: {
                 id: '5',

@@ -1,0 +1,9 @@
+<svg width="400" height="300" xmlns="http://www.w3.org/2000/svg">
+  <rect width="400" height="300" fill="#f0fdf4"/>
+  <rect x="30" y="30" width="340" height="240" fill="#dcfce7" rx="8"/>
+  <rect x="60" y="60" width="280" height="40" fill="#bbf7d0" rx="4"/>
+  <rect x="60" y="120" width="130" height="80" fill="#bbf7d0" rx="4"/>
+  <rect x="210" y="120" width="130" height="80" fill="#bbf7d0" rx="4"/>
+  <rect x="60" y="220" width="280" height="30" fill="#bbf7d0" rx="4"/>
+  <text x="200" y="290" text-anchor="middle" fill="#16a34a" font-family="Arial, sans-serif" font-size="14">Prime Land in Kiambu</text>
+</svg>

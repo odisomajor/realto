@@ -1,0 +1,289 @@
+<svg width="1600" height="1200" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <style>
+      .title { font: bold 24px sans-serif; fill: #1e40af; }
+      .section-title { font: bold 16px sans-serif; fill: #374151; }
+      .component-name { font: bold 12px sans-serif; fill: #1f2937; }
+      .text { font: 11px sans-serif; fill: #4b5563; }
+      .small-text { font: 9px sans-serif; fill: #6b7280; }
+      .page-box { fill: #dbeafe; stroke: #2563eb; stroke-width: 2; }
+      .component-box { fill: #f0f9ff; stroke: #0ea5e9; stroke-width: 1; }
+      .service-box { fill: #ecfdf5; stroke: #10b981; stroke-width: 2; }
+      .context-box { fill: #fef3c7; stroke: #f59e0b; stroke-width: 2; }
+      .ui-box { fill: #f3e8ff; stroke: #8b5cf6; stroke-width: 1; }
+      .import-line { stroke: #3b82f6; stroke-width: 1; }
+      .context-line { stroke: #f59e0b; stroke-width: 2; stroke-dasharray: 3,3; }
+      .api-line { stroke: #10b981; stroke-width: 2; }
+    </style>
+    <marker id="arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#374151"/>
+    </marker>
+  </defs>
+  
+  <!-- Title -->
+  <text x="800" y="30" text-anchor="middle" class="title">Frontend Component Relationships & Data Flow</text>
+  
+  <!-- Pages Layer -->
+  <rect x="50" y="60" width="1500" height="200" class="page-box" rx="10"/>
+  <text x="800" y="85" text-anchor="middle" class="section-title">Pages (Next.js App Router)</text>
+  
+  <!-- Home Page -->
+  <rect x="70" y="100" width="120" height="140" class="component-box" rx="5"/>
+  <text x="130" y="115" text-anchor="middle" class="component-name">Home</text>
+  <text x="130" y="130" text-anchor="middle" class="text">page.tsx</text>
+  <text x="80" y="150" class="small-text">• Hero</text>
+  <text x="80" y="165" class="small-text">• PropertyCard</text>
+  <text x="80" y="180" class="small-text">• Recommendations</text>
+  <text x="80" y="195" class="small-text">• SEOHead</text>
+  <text x="80" y="210" class="small-text">• Footer</text>
+  
+  <!-- Properties Pages -->
+  <rect x="210" y="100" width="200" height="140" class="component-box" rx="5"/>
+  <text x="310" y="115" text-anchor="middle" class="component-name">Properties</text>
+  <text x="220" y="135" class="text">• /properties (listing)</text>
+  <text x="220" y="150" class="text">• /properties/[id] (details)</text>
+  <text x="220" y="165" class="text">• /properties/for-sale</text>
+  <text x="220" y="180" class="text">• /properties/advanced-search</text>
+  <text x="220" y="195" class="text">• /properties/compare</text>
+  <text x="220" y="210" class="text">• /properties/tour/[id]</text>
+  <text x="220" y="225" class="text">• /properties/wishlist</text>
+  
+  <!-- Auth Pages -->
+  <rect x="430" y="100" width="140" height="140" class="component-box" rx="5"/>
+  <text x="500" y="115" text-anchor="middle" class="component-name">Auth</text>
+  <text x="440" y="135" class="text">• /auth/login</text>
+  <text x="440" y="150" class="text">• /auth/register</text>
+  <text x="440" y="165" class="text">• /auth/forgot-password</text>
+  <text x="440" y="180" class="text">• /auth/reset-password</text>
+  <text x="440" y="195" class="text">• /auth/verify-email</text>
+  <text x="440" y="210" class="text">• /auth/change-password</text>
+  
+  <!-- Agents Pages -->
+  <rect x="590" y="100" width="120" height="140" class="component-box" rx="5"/>
+  <text x="650" y="115" text-anchor="middle" class="component-name">Agents</text>
+  <text x="600" y="135" class="text">• /agents</text>
+  <text x="600" y="150" class="text">• /agents/[id]</text>
+  <text x="600" y="170" class="small-text">Uses:</text>
+  <text x="600" y="185" class="small-text">• AgentCard</text>
+  <text x="600" y="200" class="small-text">• PropertyCard</text>
+  <text x="600" y="215" class="small-text">• GoogleMap</text>
+  
+  <!-- Dashboard Pages -->
+  <rect x="730" y="100" width="140" height="140" class="component-box" rx="5"/>
+  <text x="800" y="115" text-anchor="middle" class="component-name">Dashboard</text>
+  <text x="740" y="135" class="text">• /dashboard</text>
+  <text x="740" y="150" class="text">• /dashboard/profile</text>
+  <text x="740" y="165" class="text">• /properties/my-properties</text>
+  <text x="740" y="180" class="text">• /properties/analytics</text>
+  <text x="740" y="195" class="text">• /favorites</text>
+  <text x="740" y="210" class="text">• /profile</text>
+  
+  <!-- Other Pages -->
+  <rect x="890" y="100" width="120" height="140" class="component-box" rx="5"/>
+  <text x="950" y="115" text-anchor="middle" class="component-name">Other</text>
+  <text x="900" y="135" class="text">• /about</text>
+  <text x="900" y="150" class="text">• /contact</text>
+  <text x="900" y="165" class="text">• /privacy</text>
+  <text x="900" y="180" class="text">• /terms</text>
+  <text x="900" y="195" class="text">• /recommendations</text>
+  
+  <!-- API Routes -->
+  <rect x="1030" y="100" width="120" height="140" class="service-box" rx="5"/>
+  <text x="1090" y="115" text-anchor="middle" class="component-name">API Routes</text>
+  <text x="1040" y="135" class="text">• /api/contact</text>
+  <text x="1040" y="150" class="text">• /api/sitemap</text>
+  <text x="1040" y="165" class="text">• /api/robots</text>
+  
+  <!-- Components Layer -->
+  <rect x="50" y="280" width="1500" height="300" fill="#f8fafc" stroke="#cbd5e1" stroke-width="2" rx="10"/>
+  <text x="800" y="305" text-anchor="middle" class="section-title">Reusable Components</text>
+  
+  <!-- Layout Components -->
+  <rect x="70" y="320" width="140" height="100" class="component-box" rx="5"/>
+  <text x="140" y="335" text-anchor="middle" class="component-name">Layout</text>
+  <text x="80" y="355" class="text">• Header</text>
+  <text x="80" y="370" class="text">• Footer</text>
+  <text x="80" y="385" class="text">• Navbar</text>
+  <text x="80" y="400" class="text">• SEOHead</text>
+  
+  <!-- Property Components -->
+  <rect x="230" y="320" width="200" height="240" class="component-box" rx="5"/>
+  <text x="330" y="335" text-anchor="middle" class="component-name">Property Components</text>
+  <text x="240" y="355" class="text">• PropertyCard</text>
+  <text x="240" y="370" class="text">• PropertyDetails</text>
+  <text x="240" y="385" class="text">• PropertyFilters</text>
+  <text x="240" y="400" class="text">• PropertySearchFilters</text>
+  <text x="240" y="415" class="text">• PropertyFormWizard</text>
+  <text x="240" y="430" class="text">• PropertyTour</text>
+  <text x="240" y="445" class="text">• PropertyComparison</text>
+  <text x="240" y="460" class="text">• PropertyRecommendations</text>
+  <text x="240" y="475" class="text">• PropertyWishlist</text>
+  <text x="240" y="490" class="text">• PropertyAnalytics</text>
+  <text x="240" y="505" class="text">• PropertyImageManager</text>
+  <text x="240" y="520" class="text">• PropertyMortgageCalculator</text>
+  <text x="240" y="535" class="text">• PropertyMapView</text>
+  <text x="240" y="550" class="text">• AdvancedSearch</text>
+  
+  <!-- Auth Components -->
+  <rect x="450" y="320" width="160" height="180" class="component-box" rx="5"/>
+  <text x="530" y="335" text-anchor="middle" class="component-name">Auth Components</text>
+  <text x="460" y="355" class="text">• LoginModal</text>
+  <text x="460" y="370" class="text">• RegistrationModal</text>
+  <text x="460" y="385" class="text">• ProtectedRoute</text>
+  <text x="460" y="400" class="text">• TwoFactorSetup</text>
+  <text x="460" y="415" class="text">• UserDashboard</text>
+  <text x="460" y="430" class="text">• UserProfile</text>
+  <text x="460" y="445" class="text">• EmailVerification</text>
+  <text x="460" y="460" class="text">• BrowsingTracker</text>
+  
+  <!-- Map Components -->
+  <rect x="630" y="320" width="140" height="120" class="component-box" rx="5"/>
+  <text x="700" y="335" text-anchor="middle" class="component-name">Map Components</text>
+  <text x="640" y="355" class="text">• GoogleMap</text>
+  <text x="640" y="370" class="text">• KenyaMap</text>
+  <text x="640" y="385" class="text">• LocationPicker</text>
+  <text x="640" y="400" class="text">• NearbyAmenities</text>
+  <text x="640" y="415" class="text">• LocationSearch</text>
+  
+  <!-- Filter Components -->
+  <rect x="790" y="320" width="140" height="80" class="component-box" rx="5"/>
+  <text x="860" y="335" text-anchor="middle" class="component-name">Filter Components</text>
+  <text x="800" y="355" class="text">• PropertyFilters</text>
+  <text x="800" y="370" class="text">• LocationFilter</text>
+  
+  <!-- Agent Components -->
+  <rect x="950" y="320" width="120" height="60" class="component-box" rx="5"/>
+  <text x="1010" y="335" text-anchor="middle" class="component-name">Agent</text>
+  <text x="960" y="355" class="text">• AgentCard</text>
+  
+  <!-- Home Components -->
+  <rect x="1090" y="320" width="120" height="60" class="component-box" rx="5"/>
+  <text x="1150" y="335" text-anchor="middle" class="component-name">Home</text>
+  <text x="1100" y="355" class="text">• Hero</text>
+  
+  <!-- UI Components -->
+  <rect x="1230" y="320" width="300" height="240" class="ui-box" rx="5"/>
+  <text x="1380" y="335" text-anchor="middle" class="component-name">UI Components (Shadcn/ui)</text>
+  <text x="1240" y="355" class="text">• Button • Card • Input • Label</text>
+  <text x="1240" y="375" class="text">• Dialog • Badge • Tabs • Select</text>
+  <text x="1240" y="395" class="text">• Alert • AlertDialog • Switch</text>
+  <text x="1240" y="415" class="text">• Slider • Progress • DropdownMenu</text>
+  <text x="1240" y="440" class="small-text">Used by all components for:</text>
+  <text x="1240" y="455" class="small-text">• Form inputs and validation</text>
+  <text x="1240" y="470" class="small-text">• Modal dialogs and alerts</text>
+  <text x="1240" y="485" class="small-text">• Navigation and menus</text>
+  <text x="1240" y="500" class="small-text">• Data display and cards</text>
+  <text x="1240" y="515" class="small-text">• Interactive elements</text>
+  <text x="1240" y="530" class="small-text">• Status indicators</text>
+  <text x="1240" y="545" class="small-text">• Loading states</text>
+  
+  <!-- Services & Context Layer -->
+  <rect x="50" y="600" width="1500" height="180" fill="#f0fdf4" stroke="#22c55e" stroke-width="2" rx="10"/>
+  <text x="800" y="625" text-anchor="middle" class="section-title">Services, Contexts & Hooks</text>
+  
+  <!-- API Services -->
+  <rect x="70" y="640" width="200" height="120" class="service-box" rx="5"/>
+  <text x="170" y="655" text-anchor="middle" class="component-name">API Services</text>
+  <text x="80" y="675" class="text">• propertyApi</text>
+  <text x="80" y="690" class="text">• authApi</text>
+  <text x="80" y="705" class="text">• userApi</text>
+  <text x="80" y="720" class="text">• favoriteApi</text>
+  <text x="80" y="735" class="text">• inquiryApi</text>
+  <text x="80" y="750" class="text">• contactApi</text>
+  
+  <!-- Contexts -->
+  <rect x="290" y="640" width="160" height="120" class="context-box" rx="5"/>
+  <text x="370" y="655" text-anchor="middle" class="component-name">React Contexts</text>
+  <text x="300" y="675" class="text">• AuthContext</text>
+  <text x="300" y="690" class="text">• PropertyContext</text>
+  <text x="300" y="710" class="small-text">Provides global state for:</text>
+  <text x="300" y="725" class="small-text">• User authentication</text>
+  <text x="300" y="740" class="small-text">• Property data</text>
+  <text x="300" y="755" class="small-text">• Search filters</text>
+  
+  <!-- Custom Hooks -->
+  <rect x="470" y="640" width="160" height="120" class="service-box" rx="5"/>
+  <text x="550" y="655" text-anchor="middle" class="component-name">Custom Hooks</text>
+  <text x="480" y="675" class="text">• useAuth</text>
+  <text x="480" y="690" class="text">• useProperties</text>
+  <text x="480" y="705" class="text">• usePayment</text>
+  <text x="480" y="720" class="text">• useFavorites</text>
+  <text x="480" y="735" class="text">• useSearch</text>
+  
+  <!-- Utils -->
+  <rect x="650" y="640" width="160" height="120" class="service-box" rx="5"/>
+  <text x="730" y="655" text-anchor="middle" class="component-name">Utilities</text>
+  <text x="660" y="675" class="text">• validation</text>
+  <text x="660" y="690" class="text">• helpers</text>
+  <text x="660" y="705" class="text">• constants</text>
+  <text x="660" y="720" class="text">• formatters</text>
+  <text x="660" y="735" class="text">• api client</text>
+  
+  <!-- Types -->
+  <rect x="830" y="640" width="160" height="120" class="service-box" rx="5"/>
+  <text x="910" y="655" text-anchor="middle" class="component-name">TypeScript Types</text>
+  <text x="840" y="675" class="text">• Property</text>
+  <text x="840" y="690" class="text">• User</text>
+  <text x="840" y="705" class="text">• Agent</text>
+  <text x="840" y="720" class="text">• SearchFilters</text>
+  <text x="840" y="735" class="text">• ApiResponse</text>
+  
+  <!-- External Libraries -->
+  <rect x="1010" y="640" width="200" height="120" class="context-box" rx="5"/>
+  <text x="1110" y="655" text-anchor="middle" class="component-name">External Libraries</text>
+  <text x="1020" y="675" class="text">• Next.js (Framework)</text>
+  <text x="1020" y="690" class="text">• React Hook Form</text>
+  <text x="1020" y="705" class="text">• Framer Motion</text>
+  <text x="1020" y="720" class="text">• Tailwind CSS</text>
+  <text x="1020" y="735" class="text">• Axios (HTTP)</text>
+  <text x="1020" y="750" class="text">• React Query</text>
+  
+  <!-- SEO & Analytics -->
+  <rect x="1230" y="640" width="160" height="120" class="service-box" rx="5"/>
+  <text x="1310" y="655" text-anchor="middle" class="component-name">SEO & Analytics</text>
+  <text x="1240" y="675" class="text">• SEOHead</text>
+  <text x="1240" y="690" class="text">• next-seo</text>
+  <text x="1240" y="705" class="text">• Google Analytics</text>
+  <text x="1240" y="720" class="text">• Sitemap generation</text>
+  <text x="1240" y="735" class="text">• Meta tags</text>
+  
+  <!-- Connection Lines -->
+  
+  <!-- Pages to Components -->
+  <line x1="130" y1="240" x2="140" y2="320" class="import-line" marker-end="url(#arrow)"/>
+  <line x1="310" y1="240" x2="330" y2="320" class="import-line" marker-end="url(#arrow)"/>
+  <line x1="500" y1="240" x2="530" y2="320" class="import-line" marker-end="url(#arrow)"/>
+  <line x1="650" y1="240" x2="700" y2="320" class="import-line" marker-end="url(#arrow)"/>
+  
+  <!-- Components to UI Components -->
+  <line x1="430" y1="400" x2="1230" y2="400" class="import-line" marker-end="url(#arrow)"/>
+  <text x="830" y="395" text-anchor="middle" class="small-text" fill="#3b82f6">imports UI components</text>
+  
+  <!-- Components to Services -->
+  <line x1="330" y1="560" x2="170" y2="640" class="api-line" marker-end="url(#arrow)"/>
+  <text x="250" y="595" text-anchor="middle" class="small-text" fill="#10b981">API calls</text>
+  
+  <!-- Components to Contexts -->
+  <line x1="530" y1="500" x2="370" y2="640" class="context-line" marker-end="url(#arrow)"/>
+  <text x="450" y="565" text-anchor="middle" class="small-text" fill="#f59e0b">context usage</text>
+  
+  <!-- Hooks to Services -->
+  <line x1="550" y1="640" x2="270" y2="700" class="api-line" marker-end="url(#arrow)"/>
+  
+  <!-- Data Flow Legend -->
+  <rect x="50" y="800" width="1500" height="120" fill="#f9fafb" stroke="#e5e7eb" stroke-width="1" rx="5"/>
+  <text x="800" y="825" text-anchor="middle" class="section-title">Component Interaction Patterns</text>
+  
+  <text x="70" y="850" class="text">1. Pages import and compose components</text>
+  <text x="70" y="870" class="text">2. Components use UI library for consistent styling</text>
+  <text x="70" y="890" class="text">3. Components access global state via React Context</text>
+  
+  <text x="500" y="850" class="text">4. Custom hooks encapsulate API logic</text>
+  <text x="500" y="870" class="text">5. Services handle backend communication</text>
+  <text x="500" y="890" class="text">6. TypeScript ensures type safety across all layers</text>
+  
+  <text x="950" y="850" class="text">7. SEO components enhance discoverability</text>
+  <text x="950" y="870" class="text">8. Protected routes ensure authentication</text>
+  <text x="950" y="890" class="text">9. Real-time updates via WebSocket connections</text>
+  
+</svg>

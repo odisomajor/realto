@@ -1,4 +1,10 @@
-import { UserRole } from '@prisma/client';
+// Define UserRole enum locally since SQLite doesn't support enums
+export enum UserRole {
+  USER = 'USER',
+  AGENT = 'AGENT',
+  ADMIN = 'ADMIN',
+  SUPER_ADMIN = 'SUPER_ADMIN'
+}
 
 export interface JWTPayload {
   userId: string;

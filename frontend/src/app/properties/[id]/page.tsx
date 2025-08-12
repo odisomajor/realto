@@ -45,10 +45,10 @@ const mockProperty: Property = {
   category: "residential",
   status: "available",
   images: [
-    "https://picsum.photos/800/600?random=30",
-    "https://picsum.photos/800/600?random=31",
-    "https://picsum.photos/800/600?random=32",
-    "https://picsum.photos/800/600?random=33"
+    "/images/property-1.jpg",
+    "/images/property-2.jpg",
+    "/images/property-3.jpg",
+    "/images/property-1.jpg"
   ],
   features: [
     "Swimming Pool",
@@ -123,7 +123,7 @@ export default function PropertyDetailPage() {
           type: 'sale',
           category: 'residential',
           status: 'available',
-          images: ["https://picsum.photos/400/300?random=40"],
+          images: ["/images/property-2.jpg"],
           features: ['parking', 'security', 'wifi'],
           agent: {
             id: 'agent-2',
@@ -146,7 +146,7 @@ export default function PropertyDetailPage() {
           type: 'sale',
           category: 'residential',
           status: 'available',
-          images: ["https://picsum.photos/400/300?random=41"],
+          images: ["/images/property-3.jpg"],
           features: ['garden', 'parking', 'security'],
           agent: {
             id: 'agent-3',

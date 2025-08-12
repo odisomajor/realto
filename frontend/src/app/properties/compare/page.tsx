@@ -39,7 +39,7 @@ function PropertyCompareContent() {
       
       // Fetch all properties for selection
       const allPropertiesResponse = await propertyApi.getProperties()
-      setAvailableProperties(allPropertiesResponse.data)
+      setAvailableProperties(allPropertiesResponse.data.data)
       
       // Fetch specific properties for comparison
       if (propertyIds.length > 0) {

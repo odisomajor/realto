@@ -6,6 +6,14 @@ const prisma = new PrismaClient();
 async function main() {
   console.log('🌱 Starting database seeding...');
 
+  // Clear existing data
+  console.log('🧹 Clearing existing data...');
+  await prisma.favorite.deleteMany({});
+  await prisma.inquiry.deleteMany({});
+  await prisma.property.deleteMany({});
+  await prisma.user.deleteMany({});
+  console.log('✅ Existing data cleared');
+
   // Create sample users
   const hashedPassword = await bcrypt.hash('password123', 12);
   

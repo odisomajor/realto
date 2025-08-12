@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
-import { PrismaClient, UserRole } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
+import { UserRole } from '../types/auth';
 import { JWTPayload, AuthMiddlewareOptions } from '@/types/auth';
 import authConfig from '@/config/auth';
 import { AppError } from '@/middleware/errorHandler';

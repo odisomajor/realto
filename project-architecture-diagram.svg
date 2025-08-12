@@ -1,0 +1,239 @@
+<svg width="1400" height="1000" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <style>
+      .title { font: bold 24px sans-serif; fill: #2563eb; }
+      .section-title { font: bold 18px sans-serif; fill: #1e40af; }
+      .component-title { font: bold 14px sans-serif; fill: #374151; }
+      .text { font: 12px sans-serif; fill: #6b7280; }
+      .small-text { font: 10px sans-serif; fill: #9ca3af; }
+      .frontend-box { fill: #dbeafe; stroke: #3b82f6; stroke-width: 2; }
+      .backend-box { fill: #dcfce7; stroke: #22c55e; stroke-width: 2; }
+      .database-box { fill: #fef3c7; stroke: #f59e0b; stroke-width: 2; }
+      .mobile-box { fill: #f3e8ff; stroke: #8b5cf6; stroke-width: 2; }
+      .api-line { stroke: #ef4444; stroke-width: 2; stroke-dasharray: 5,5; }
+      .data-line { stroke: #10b981; stroke-width: 2; }
+      .auth-line { stroke: #8b5cf6; stroke-width: 2; }
+    </style>
+  </defs>
+  
+  <!-- Title -->
+  <text x="700" y="30" text-anchor="middle" class="title">Xillix Real Estate Portal - Architecture Overview</text>
+  
+  <!-- Frontend Section -->
+  <rect x="50" y="60" width="600" height="400" class="frontend-box" rx="10"/>
+  <text x="350" y="85" text-anchor="middle" class="section-title">Frontend (Next.js/React)</text>
+  
+  <!-- Pages -->
+  <rect x="70" y="100" width="180" height="320" fill="#f8fafc" stroke="#cbd5e1" rx="5"/>
+  <text x="160" y="120" text-anchor="middle" class="component-title">Pages</text>
+  
+  <text x="80" y="140" class="text">• Home (/)</text>
+  <text x="80" y="155" class="text">• Properties (/properties)</text>
+  <text x="80" y="170" class="small-text">  - Property Details [id]</text>
+  <text x="80" y="185" class="small-text">  - For Sale/Rent</text>
+  <text x="80" y="200" class="small-text">  - Advanced Search</text>
+  <text x="80" y="215" class="small-text">  - Analytics</text>
+  <text x="80" y="230" class="small-text">  - Compare</text>
+  <text x="80" y="245" class="small-text">  - Tours</text>
+  <text x="80" y="260" class="small-text">  - Wishlist</text>
+  <text x="80" y="275" class="text">• Agents (/agents)</text>
+  <text x="80" y="290" class="small-text">  - Agent Profile [id]</text>
+  <text x="80" y="305" class="text">• Auth (/auth)</text>
+  <text x="80" y="320" class="small-text">  - Login/Register</text>
+  <text x="80" y="335" class="small-text">  - Password Reset</text>
+  <text x="80" y="350" class="text">• Dashboard</text>
+  <text x="80" y="365" class="text">• Favorites</text>
+  <text x="80" y="380" class="text">• Profile</text>
+  <text x="80" y="395" class="text">• About/Contact</text>
+  
+  <!-- Components -->
+  <rect x="270" y="100" width="180" height="320" fill="#f8fafc" stroke="#cbd5e1" rx="5"/>
+  <text x="360" y="120" text-anchor="middle" class="component-title">Components</text>
+  
+  <text x="280" y="140" class="text">Layout:</text>
+  <text x="280" y="155" class="small-text">• Header/Footer</text>
+  <text x="280" y="170" class="text">Properties:</text>
+  <text x="280" y="185" class="small-text">• PropertyCard</text>
+  <text x="280" y="200" class="small-text">• PropertyDetails</text>
+  <text x="280" y="215" class="small-text">• PropertyFilters</text>
+  <text x="280" y="230" class="small-text">• PropertyTour</text>
+  <text x="280" y="245" class="small-text">• PropertyComparison</text>
+  <text x="280" y="260" class="text">Auth:</text>
+  <text x="280" y="275" class="small-text">• LoginModal</text>
+  <text x="280" y="290" class="small-text">• ProtectedRoute</text>
+  <text x="280" y="305" class="small-text">• TwoFactorSetup</text>
+  <text x="280" y="320" class="text">Maps:</text>
+  <text x="280" y="335" class="small-text">• GoogleMap</text>
+  <text x="280" y="350" class="small-text">• LocationPicker</text>
+  <text x="280" y="365" class="text">UI:</text>
+  <text x="280" y="380" class="small-text">• Button/Card/Input</text>
+  <text x="280" y="395" class="small-text">• Dialog/Badge/Tabs</text>
+  
+  <!-- Services -->
+  <rect x="470" y="100" width="160" height="320" fill="#f8fafc" stroke="#cbd5e1" rx="5"/>
+  <text x="550" y="120" text-anchor="middle" class="component-title">Services & Utils</text>
+  
+  <text x="480" y="140" class="text">API Services:</text>
+  <text x="480" y="155" class="small-text">• propertyApi</text>
+  <text x="480" y="170" class="small-text">• authApi</text>
+  <text x="480" y="185" class="small-text">• userApi</text>
+  <text x="480" y="200" class="text">Contexts:</text>
+  <text x="480" y="215" class="small-text">• AuthContext</text>
+  <text x="480" y="230" class="small-text">• PropertyContext</text>
+  <text x="480" y="245" class="text">Hooks:</text>
+  <text x="480" y="260" class="small-text">• useAuth</text>
+  <text x="480" y="275" class="small-text">• useProperties</text>
+  <text x="480" y="290" class="text">Utils:</text>
+  <text x="480" y="305" class="small-text">• validation</text>
+  <text x="480" y="320" class="small-text">• helpers</text>
+  <text x="480" y="335" class="text">SEO:</text>
+  <text x="480" y="350" class="small-text">• SEOHead</text>
+  <text x="480" y="365" class="small-text">• Sitemap</text>
+  
+  <!-- Backend Section -->
+  <rect x="750" y="60" width="600" height="400" class="backend-box" rx="10"/>
+  <text x="1050" y="85" text-anchor="middle" class="section-title">Backend (Node.js/Express)</text>
+  
+  <!-- Controllers -->
+  <rect x="770" y="100" width="180" height="320" fill="#f0fdf4" stroke="#bbf7d0" rx="5"/>
+  <text x="860" y="120" text-anchor="middle" class="component-title">Controllers</text>
+  
+  <text x="780" y="140" class="text">• authController</text>
+  <text x="780" y="155" class="text">• propertyController</text>
+  <text x="780" y="170" class="text">• userController</text>
+  <text x="780" y="185" class="text">• favoriteController</text>
+  <text x="780" y="200" class="text">• inquiryController</text>
+  <text x="780" y="215" class="text">• contactController</text>
+  <text x="780" y="230" class="text">• notificationController</text>
+  <text x="780" y="245" class="text">• fileController</text>
+  <text x="780" y="260" class="text">• browsingSessionController</text>
+  
+  <!-- Services -->
+  <rect x="970" y="100" width="180" height="320" fill="#f0fdf4" stroke="#bbf7d0" rx="5"/>
+  <text x="1060" y="120" text-anchor="middle" class="component-title">Services</text>
+  
+  <text x="980" y="140" class="text">• authService</text>
+  <text x="980" y="155" class="text">• propertyService</text>
+  <text x="980" y="170" class="text">• userService</text>
+  <text x="980" y="185" class="text">• emailService</text>
+  <text x="980" y="200" class="text">• smsService</text>
+  <text x="980" y="215" class="text">• notificationService</text>
+  <text x="980" y="230" class="text">• fileService</text>
+  <text x="980" y="245" class="text">• cacheService</text>
+  <text x="980" y="260" class="text">• geocodingService</text>
+  <text x="980" y="275" class="text">• pushNotificationService</text>
+  
+  <!-- Routes -->
+  <rect x="1170" y="100" width="160" height="320" fill="#f0fdf4" stroke="#bbf7d0" rx="5"/>
+  <text x="1250" y="120" text-anchor="middle" class="component-title">Routes</text>
+  
+  <text x="1180" y="140" class="text">• /api/auth</text>
+  <text x="1180" y="155" class="text">• /api/properties</text>
+  <text x="1180" y="170" class="text">• /api/users</text>
+  <text x="1180" y="185" class="text">• /api/favorites</text>
+  <text x="1180" y="200" class="text">• /api/inquiries</text>
+  <text x="1180" y="215" class="text">• /api/contact</text>
+  <text x="1180" y="230" class="text">• /api/notifications</text>
+  <text x="1180" y="245" class="text">• /api/files</text>
+  <text x="1180" y="260" class="text">• /api/geocoding</text>
+  <text x="1180" y="275" class="text">• /api/browsing</text>
+  
+  <!-- Database Section -->
+  <rect x="50" y="500" width="300" height="200" class="database-box" rx="10"/>
+  <text x="200" y="525" text-anchor="middle" class="section-title">Database (PostgreSQL)</text>
+  
+  <text x="70" y="550" class="text">Tables:</text>
+  <text x="70" y="570" class="small-text">• users (auth, profiles)</text>
+  <text x="70" y="585" class="small-text">• properties (listings)</text>
+  <text x="70" y="600" class="small-text">• property_types</text>
+  <text x="70" y="615" class="small-text">• favorites</text>
+  <text x="70" y="630" class="small-text">• inquiries</text>
+  <text x="70" y="645" class="small-text">• browsing_sessions</text>
+  <text x="70" y="660" class="small-text">• notifications</text>
+  <text x="70" y="675" class="small-text">• transactions</text>
+  
+  <!-- Mobile App Section -->
+  <rect x="400" y="500" width="300" height="200" class="mobile-box" rx="10"/>
+  <text x="550" y="525" text-anchor="middle" class="section-title">Mobile App (Android)</text>
+  
+  <text x="420" y="550" class="text">Activities:</text>
+  <text x="420" y="570" class="small-text">• MainActivity</text>
+  <text x="420" y="585" class="small-text">• PropertyDetailsActivity</text>
+  <text x="420" y="600" class="small-text">• SearchActivity</text>
+  <text x="420" y="615" class="small-text">• ProfileActivity</text>
+  <text x="420" y="630" class="text">Services:</text>
+  <text x="420" y="645" class="small-text">• ApiService</text>
+  <text x="420" y="660" class="small-text">• AuthService</text>
+  <text x="420" y="675" class="small-text">• NotificationService</text>
+  
+  <!-- External Services -->
+  <rect x="750" y="500" width="300" height="200" class="database-box" rx="10"/>
+  <text x="900" y="525" text-anchor="middle" class="section-title">External Services</text>
+  
+  <text x="770" y="550" class="text">Authentication:</text>
+  <text x="770" y="570" class="small-text">• JWT Tokens</text>
+  <text x="770" y="585" class="small-text">• 2FA (Speakeasy)</text>
+  <text x="770" y="600" class="text">Maps & Location:</text>
+  <text x="770" y="615" class="small-text">• Google Maps API</text>
+  <text x="770" y="630" class="small-text">• Geocoding Service</text>
+  <text x="770" y="645" class="text">Communication:</text>
+  <text x="770" y="660" class="small-text">• Email (Nodemailer)</text>
+  <text x="770" y="675" class="small-text">• SMS (Twilio)</text>
+  
+  <!-- Deployment -->
+  <rect x="1100" y="500" width="250" height="200" class="backend-box" rx="10"/>
+  <text x="1225" y="525" text-anchor="middle" class="section-title">Deployment</text>
+  
+  <text x="1120" y="550" class="text">Infrastructure:</text>
+  <text x="1120" y="570" class="small-text">• Nginx (Web Server)</text>
+  <text x="1120" y="585" class="small-text">• PM2 (Process Manager)</text>
+  <text x="1120" y="600" class="small-text">• Redis (Caching)</text>
+  <text x="1120" y="615" class="text">CI/CD:</text>
+  <text x="1120" y="630" class="small-text">• GitHub Actions</text>
+  <text x="1120" y="645" class="small-text">• Docker</text>
+  <text x="1120" y="660" class="text">Monitoring:</text>
+  <text x="1120" y="675" class="small-text">• Health Checks</text>
+  
+  <!-- Connection Lines -->
+  
+  <!-- Frontend to Backend API -->
+  <line x1="650" y1="250" x2="750" y2="250" class="api-line"/>
+  <text x="700" y="245" text-anchor="middle" class="small-text" fill="#ef4444">REST API</text>
+  
+  <!-- Backend to Database -->
+  <line x1="860" y1="460" x2="200" y2="500" class="data-line"/>
+  <text x="530" y="485" text-anchor="middle" class="small-text" fill="#10b981">Prisma ORM</text>
+  
+  <!-- Mobile to Backend -->
+  <line x1="550" y1="500" x2="860" y2="460" class="api-line"/>
+  <text x="705" y="475" text-anchor="middle" class="small-text" fill="#ef4444">Shared API</text>
+  
+  <!-- Backend to External Services -->
+  <line x1="1050" y1="460" x2="900" y2="500" class="auth-line"/>
+  <text x="975" y="485" text-anchor="middle" class="small-text" fill="#8b5cf6">Integrations</text>
+  
+  <!-- Data Flow Arrows -->
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#374151"/>
+    </marker>
+  </defs>
+  
+  <!-- Legend -->
+  <rect x="50" y="750" width="1300" height="120" fill="#f9fafb" stroke="#e5e7eb" rx="5"/>
+  <text x="700" y="775" text-anchor="middle" class="section-title">Data Flow & Connections</text>
+  
+  <line x1="100" y1="800" x2="150" y2="800" class="api-line"/>
+  <text x="160" y="805" class="small-text">REST API Calls</text>
+  
+  <line x1="300" y1="800" x2="350" y2="800" class="data-line"/>
+  <text x="360" y="805" class="small-text">Database Operations</text>
+  
+  <line x1="500" y1="800" x2="550" y2="800" class="auth-line"/>
+  <text x="560" y="805" class="small-text">External Service Integration</text>
+  
+  <text x="100" y="830" class="text">Key Features:</text>
+  <text x="100" y="845" class="small-text">• JWT Authentication across all platforms • Real-time notifications • Property search & filtering</text>
+  <text x="100" y="860" class="small-text">• Image upload & management • Google Maps integration • Email/SMS notifications • 2FA security</text>
+  
+</svg>

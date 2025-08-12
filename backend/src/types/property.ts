@@ -1,7 +1,43 @@
-import { 
-  PropertyType, 
-  ListingType
-} from '@prisma/client';
+// Define enums locally since SQLite doesn't support enums
+export enum PropertyType {
+  HOUSE = 'HOUSE',
+  APARTMENT = 'APARTMENT',
+  CONDO = 'CONDO',
+  TOWNHOUSE = 'TOWNHOUSE',
+  VILLA = 'VILLA',
+  LAND = 'LAND',
+  COMMERCIAL = 'COMMERCIAL',
+  OFFICE = 'OFFICE',
+  RETAIL = 'RETAIL',
+  WAREHOUSE = 'WAREHOUSE',
+  INDUSTRIAL = 'INDUSTRIAL'
+}
+
+export enum ListingType {
+  SALE = 'SALE',
+  RENT = 'RENT',
+  LEASE = 'LEASE'
+}
+
+export enum NotificationType {
+  WELCOME = 'WELCOME',
+  PROPERTY_INQUIRY = 'PROPERTY_INQUIRY',
+  APPOINTMENT_SCHEDULED = 'APPOINTMENT_SCHEDULED',
+  APPOINTMENT_REMINDER = 'APPOINTMENT_REMINDER',
+  PROPERTY_APPROVED = 'PROPERTY_APPROVED',
+  PROPERTY_REJECTED = 'PROPERTY_REJECTED',
+  ACCOUNT_VERIFIED = 'ACCOUNT_VERIFIED',
+  NEW_REVIEW = 'NEW_REVIEW',
+  PRICE_CHANGE = 'PRICE_CHANGE',
+  FAVORITE_PROPERTY_UPDATE = 'FAVORITE_PROPERTY_UPDATE',
+  ACCOUNT_VERIFICATION = 'ACCOUNT_VERIFICATION',
+  PASSWORD_RESET = 'PASSWORD_RESET',
+  SYSTEM_MAINTENANCE = 'SYSTEM_MAINTENANCE',
+  PAYMENT_CONFIRMATION = 'PAYMENT_CONFIRMATION',
+  SUBSCRIPTION_EXPIRY = 'SUBSCRIPTION_EXPIRY',
+  NEW_MESSAGE = 'NEW_MESSAGE',
+  PROPERTY_MATCH = 'PROPERTY_MATCH'
+}
 
 // Define custom enums that are not in Prisma schema
 export enum PropertyStatus {
@@ -47,9 +83,7 @@ export enum AppointmentStatus {
 export interface PropertySearchFilters {
   // Location
   city?: string;
-  state?: string;
-  zipCode?: string;
-  neighborhood?: string;
+  county?: string;
   radius?: number; // in miles
   coordinates?: {
     lat: number;
@@ -69,27 +103,17 @@ export interface PropertySearchFilters {
     max?: number;
   };
 
-  // Property Features
-  bedrooms?: {
-    min?: number;
-    max?: number;
-  };
-  bathrooms?: {
-    min?: number;
-    max?: number;
-  };
-  squareFootage?: {
-    min?: number;
-    max?: number;
-  };
-  lotSize?: {
-    min?: number;
-    max?: number;
-  };
-  yearBuilt?: {
-    min?: number;
-    max?: number;
-  };
+  // Property specifications
+  minBedrooms?: number;
+  maxBedrooms?: number;
+  minBathrooms?: number;
+  maxBathrooms?: number;
+  minSquareFootage?: number;
+  maxSquareFootage?: number;
+  minLotSize?: number;
+  maxLotSize?: number;
+  yearBuiltFrom?: number;
+  yearBuiltTo?: number;
 
   // Amenities & Features
   features?: string[];
@@ -129,6 +153,7 @@ export interface PropertySearchOptions {
   includeAgent?: boolean;
   includeAgency?: boolean;
   includeReviews?: boolean;
+  includeInactive?: boolean;
 }
 
 export interface PropertySearchResult {
@@ -163,8 +188,7 @@ export interface PropertySummary {
   // Location
   address: string;
   city: string;
-  state: string;
-  neighborhood?: string;
+  county: string;
   coordinates: {
     lat: number;
     lng: number;
@@ -307,10 +331,7 @@ export interface CreatePropertyRequest {
   // Location
   address: string;
   city: string;
-  state: string;
-  country: string;
-  zipCode: string;
-  neighborhood?: string;
+  county: string;
   latitude: number;
   longitude: number;
   
@@ -358,6 +379,10 @@ export interface UpdatePropertyRequest extends Partial<CreatePropertyRequest> {
   featured?: boolean;
   priority?: number;
 }
+
+// Aliases for backward compatibility
+export type PropertyCreateRequest = CreatePropertyRequest;
+export type PropertyUpdateRequest = UpdatePropertyRequest;
 
 export interface PropertyInquiry {
   id: string;
@@ -480,12 +505,6 @@ export interface PropertyAnalytics {
     total: number;
     thisWeek: number;
     thisMonth: number;
-  };
-  appointments: {
-    total: number;
-    completed: number;
-    cancelled: number;
-    noShow: number;
   };
   performance: {
     daysOnMarket: number;

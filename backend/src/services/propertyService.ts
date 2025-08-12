@@ -1,4 +1,5 @@
-import { PrismaClient, Property, PropertyStatus, PropertyType, ListingType } from '@prisma/client';
+import { PrismaClient, Property } from '@prisma/client';
+import { PropertyStatus, PropertyType, ListingType } from '../types/property';
 import { 
   PropertySearchFilters, 
   PropertySearchOptions, 
@@ -12,9 +13,11 @@ import {
   PropertyAnalytics,
   MarketAnalytics
 } from '@/types/property';
-import { AppError } from '@/middleware/errorHandler';
+import { AppError } from '@/utils/errors';
 import { logger } from '@/utils/logger';
-import { cache } from '@/config/database';
+import { config } from '@/config/database';
+
+const { cache } = config;
 
 const prisma = new PrismaClient();
 
@@ -42,58 +45,78 @@ export class PropertyService {
         ...(filters.propertyType && { propertyType: filters.propertyType }),
         ...(filters.listingType && { listingType: filters.listingType }),
         ...(filters.status && { status: filters.status }),
-        ...(filters.minPrice && { price: { gte: filters.minPrice } }),
-        ...(filters.maxPrice && { price: { ...where.price, lte: filters.maxPrice } }),
-        ...(filters.minBedrooms && { bedrooms: { gte: filters.minBedrooms } }),
-        ...(filters.maxBedrooms && { bedrooms: { ...where.bedrooms, lte: filters.maxBedrooms } }),
-        ...(filters.minBathrooms && { bathrooms: { gte: filters.minBathrooms } }),
-        ...(filters.maxBathrooms && { bathrooms: { ...where.bathrooms, lte: filters.maxBathrooms } }),
-        ...(filters.minSquareFootage && { squareFootage: { gte: filters.minSquareFootage } }),
-        ...(filters.maxSquareFootage && { squareFootage: { ...where.squareFootage, lte: filters.maxSquareFootage } }),
-        ...(filters.yearBuiltFrom && { yearBuilt: { gte: filters.yearBuiltFrom } }),
-        ...(filters.yearBuiltTo && { yearBuilt: { ...where.yearBuilt, lte: filters.yearBuiltTo } }),
         ...(filters.city && { city: { contains: filters.city, mode: 'insensitive' } }),
-        ...(filters.state && { state: { contains: filters.state, mode: 'insensitive' } }),
-        ...(filters.zipCode && { zipCode: filters.zipCode }),
-        ...(filters.neighborhood && { neighborhood: { contains: filters.neighborhood, mode: 'insensitive' } }),
+        ...(filters.county && { county: { contains: filters.county, mode: 'insensitive' } }),
         ...(filters.features && filters.features.length > 0 && {
           features: { hasSome: filters.features }
         }),
         ...(filters.amenities && filters.amenities.length > 0 && {
           amenities: { hasSome: filters.amenities }
         }),
-        ...(filters.agentId && { agentId: filters.agentId }),
-        ...(filters.agencyId && { agencyId: filters.agencyId }),
+        ...(filters.agentId && { ownerId: filters.agentId }),
+        // TODO: Add agency relationship to schema if needed
+        // ...(filters.agencyId && { agencyId: filters.agencyId }),
         ...(!includeInactive && { status: { not: 'INACTIVE' } })
       };
 
-      // Handle location-based search
-      if (filters.latitude && filters.longitude && filters.radius) {
-        // Note: This is a simplified distance calculation
-        // In production, you might want to use PostGIS or similar
-        const latRange = filters.radius / 69; // Rough miles to degrees conversion
-        const lonRange = filters.radius / (69 * Math.cos(filters.latitude * Math.PI / 180));
-        
-        where.latitude = {
-          gte: filters.latitude - latRange,
-          lte: filters.latitude + latRange
-        };
-        where.longitude = {
-          gte: filters.longitude - lonRange,
-          lte: filters.longitude + lonRange
+      // Handle price range
+      if (filters.minPrice || filters.maxPrice) {
+        where.price = {
+          ...(filters.minPrice && { gte: filters.minPrice }),
+          ...(filters.maxPrice && { lte: filters.maxPrice })
         };
       }
 
-      // Handle text search
-      if (filters.searchQuery) {
-        where.OR = [
-          { title: { contains: filters.searchQuery, mode: 'insensitive' } },
-          { description: { contains: filters.searchQuery, mode: 'insensitive' } },
-          { address: { contains: filters.searchQuery, mode: 'insensitive' } },
-          { city: { contains: filters.searchQuery, mode: 'insensitive' } },
-          { neighborhood: { contains: filters.searchQuery, mode: 'insensitive' } }
-        ];
+      // Handle bedroom range
+      if (filters.minBedrooms || filters.maxBedrooms) {
+        where.bedrooms = {
+          ...(filters.minBedrooms && { gte: filters.minBedrooms }),
+          ...(filters.maxBedrooms && { lte: filters.maxBedrooms })
+        };
       }
+
+      // Handle bathroom range
+      if (filters.minBathrooms || filters.maxBathrooms) {
+        where.bathrooms = {
+          ...(filters.minBathrooms && { gte: filters.minBathrooms }),
+          ...(filters.maxBathrooms && { lte: filters.maxBathrooms })
+        };
+      }
+
+      // Handle square footage range
+      if (filters.minSquareFootage || filters.maxSquareFootage) {
+        where.squareFootage = {
+          ...(filters.minSquareFootage && { gte: filters.minSquareFootage }),
+          ...(filters.maxSquareFootage && { lte: filters.maxSquareFootage })
+        };
+      }
+
+      // Handle year built range
+      if (filters.yearBuiltFrom || filters.yearBuiltTo) {
+        where.yearBuilt = {
+          ...(filters.yearBuiltFrom && { gte: filters.yearBuiltFrom }),
+          ...(filters.yearBuiltTo && { lte: filters.yearBuiltTo })
+        };
+      }
+
+      // Handle location-based search
+      if (filters.coordinates && filters.radius) {
+        // Note: This is a simplified distance calculation
+        // In production, you might want to use PostGIS or similar
+        const latRange = filters.radius / 69; // Rough miles to degrees conversion
+        const lonRange = filters.radius / (69 * Math.cos(filters.coordinates.lat * Math.PI / 180));
+        
+        where.latitude = {
+          gte: filters.coordinates.lat - latRange,
+          lte: filters.coordinates.lat + latRange
+        };
+        where.longitude = {
+          gte: filters.coordinates.lng - lonRange,
+          lte: filters.coordinates.lng + lonRange
+        };
+      }
+
+      // TODO: Add text search functionality when searchQuery field is added to PropertySearchFilters interface
 
       // Execute search with count
       const [properties, total] = await Promise.all([
@@ -103,11 +126,7 @@ export class PropertyService {
           take: limit,
           orderBy: { [sortBy]: sortOrder },
           include: {
-            images: {
-              take: 1,
-              orderBy: { order: 'asc' }
-            },
-            agent: {
+            owner: {
               select: {
                 id: true,
                 firstName: true,
@@ -117,22 +136,14 @@ export class PropertyService {
                 avatar: true
               }
             },
-            agency: {
-              select: {
-                id: true,
-                name: true,
-                logo: true
-              }
-            },
             _count: {
               select: {
                 favorites: true,
-                inquiries: true,
-                reviews: true
+                inquiries: true
               }
             }
           }
-        }),
+        }) as any,
         prisma.property.count({ where })
       ]);
 
@@ -142,14 +153,12 @@ export class PropertyService {
 
       return {
         properties: properties.map(this.formatPropertySummary),
-        pagination: {
-          page,
-          limit,
-          total,
-          totalPages,
-          hasNextPage,
-          hasPreviousPage
-        },
+        total,
+        page,
+        limit,
+        totalPages,
+        hasNext: hasNextPage,
+        hasPrev: hasPreviousPage,
         filters: filters
       };
     } catch (error) {
@@ -173,64 +182,24 @@ export class PropertyService {
       const property = await prisma.property.findUnique({
         where: { id },
         include: {
-          images: { orderBy: { order: 'asc' } },
-          videos: { orderBy: { order: 'asc' } },
-          documents: true,
-          virtualTours: true,
-          agent: {
+          owner: {
             select: {
               id: true,
               firstName: true,
               lastName: true,
               email: true,
               phone: true,
-              avatar: true,
-              bio: true,
-              licenseNumber: true,
-              specializations: true,
-              languages: true,
-              socialMedia: true
+              avatar: true
             }
-          },
-          agency: {
-            select: {
-              id: true,
-              name: true,
-              logo: true,
-              phone: true,
-              email: true,
-              website: true,
-              address: true
-            }
-          },
-          reviews: {
-            include: {
-              user: {
-                select: {
-                  id: true,
-                  firstName: true,
-                  lastName: true,
-                  avatar: true
-                }
-              }
-            },
-            orderBy: { createdAt: 'desc' },
-            take: 10
-          },
-          priceHistory: {
-            orderBy: { createdAt: 'desc' },
-            take: 20
           },
           _count: {
             select: {
               favorites: true,
-              inquiries: true,
-              reviews: true,
-              appointments: true
+              inquiries: true
             }
           }
         }
-      });
+      }) as any;
 
       if (!property) {
         throw new AppError('Property not found', 404);
@@ -272,19 +241,23 @@ export class PropertyService {
   /**
    * Create a new property
    */
-  async createProperty(data: PropertyCreateRequest, agentId: string): Promise<PropertyDetails> {
+  async createProperty(data: PropertyCreateRequest, ownerId: string): Promise<PropertyDetails> {
     try {
+      // Transform data to match Prisma schema
+      const { agentId, agencyId, ...validData } = data;
       const property = await prisma.property.create({
         data: {
-          ...data,
-          agentId,
+          ...validData,
+          ownerId: ownerId,
           slug: this.generateSlug(data.title),
-          status: PropertyStatus.PENDING
+          status: PropertyStatus.PENDING,
+          // Convert arrays to JSON strings for SQLite
+          features: data.features ? JSON.stringify(data.features) : null,
+          amenities: data.amenities ? JSON.stringify(data.amenities) : null,
+          images: data.images ? JSON.stringify(data.images) : null
         },
         include: {
-          images: { orderBy: { order: 'asc' } },
-          videos: { orderBy: { order: 'asc' } },
-          agent: {
+          owner: {
             select: {
               id: true,
               firstName: true,
@@ -293,22 +266,15 @@ export class PropertyService {
               phone: true,
               avatar: true
             }
-          },
-          agency: {
-            select: {
-              id: true,
-              name: true,
-              logo: true
-            }
           }
         }
       });
 
-      logger.info('Property created', { propertyId: property.id, agentId });
+      logger.info('Property created', { propertyId: property.id, ownerId });
 
       return this.formatPropertyDetails(property, false);
     } catch (error) {
-      logger.error('Error creating property', { error, data, agentId });
+      logger.error('Error creating property', { error, data, ownerId });
       throw new AppError('Failed to create property', 500);
     }
   }
@@ -325,39 +291,46 @@ export class PropertyService {
       // Check if property exists and user has permission
       const existingProperty = await prisma.property.findUnique({
         where: { id },
-        select: { agentId: true, agencyId: true }
+        select: { ownerId: true }
       });
 
       if (!existingProperty) {
         throw new AppError('Property not found', 404);
       }
 
-      // Check permissions (agent owns property or admin)
+      // Check permissions (owner or admin)
       const user = await prisma.user.findUnique({
         where: { id: userId },
-        select: { role: true, agencyId: true }
+        select: { role: true }
       });
 
       const canUpdate = 
-        existingProperty.agentId === userId ||
-        (user?.role === 'ADMIN' && existingProperty.agencyId === user.agencyId) ||
+        existingProperty.ownerId === userId ||
+        user?.role === 'ADMIN' ||
         user?.role === 'SUPER_ADMIN';
 
       if (!canUpdate) {
         throw new AppError('Insufficient permissions to update this property', 403);
       }
 
+      // Transform data to match Prisma schema
+      const { agentId, agencyId, ...validData } = data;
+      const updateData: any = {
+        ...validData,
+        ...(data.title && { slug: this.generateSlug(data.title) }),
+        updatedAt: new Date()
+      };
+      
+      // Convert arrays to JSON strings for SQLite if they exist
+      if (data.features) updateData.features = JSON.stringify(data.features);
+      if (data.amenities) updateData.amenities = JSON.stringify(data.amenities);
+      if (data.images) updateData.images = JSON.stringify(data.images);
+      
       const updatedProperty = await prisma.property.update({
         where: { id },
-        data: {
-          ...data,
-          ...(data.title && { slug: this.generateSlug(data.title) }),
-          updatedAt: new Date()
-        },
+        data: updateData,
         include: {
-          images: { orderBy: { order: 'asc' } },
-          videos: { orderBy: { order: 'asc' } },
-          agent: {
+          owner: {
             select: {
               id: true,
               firstName: true,
@@ -365,13 +338,6 @@ export class PropertyService {
               email: true,
               phone: true,
               avatar: true
-            }
-          },
-          agency: {
-            select: {
-              id: true,
-              name: true,
-              logo: true
             }
           }
         }
@@ -398,7 +364,7 @@ export class PropertyService {
       // Check if property exists and user has permission
       const existingProperty = await prisma.property.findUnique({
         where: { id },
-        select: { agentId: true, agencyId: true }
+        select: { ownerId: true }
       });
 
       if (!existingProperty) {
@@ -408,12 +374,12 @@ export class PropertyService {
       // Check permissions
       const user = await prisma.user.findUnique({
         where: { id: userId },
-        select: { role: true, agencyId: true }
+        select: { role: true }
       });
 
       const canDelete = 
-        existingProperty.agentId === userId ||
-        (user?.role === 'ADMIN' && existingProperty.agencyId === user.agencyId) ||
+        existingProperty.ownerId === userId ||
+        user?.role === 'ADMIN' ||
         user?.role === 'SUPER_ADMIN';
 
       if (!canDelete) {
@@ -436,18 +402,18 @@ export class PropertyService {
   }
 
   /**
-   * Get properties by agent
+   * Get properties by owner
    */
-  async getPropertiesByAgent(
-    agentId: string,
+  async getPropertiesByOwner(
+    ownerId: string,
     options: PropertySearchOptions = {}
   ): Promise<PropertySearchResult> {
     try {
-      const filters: PropertySearchFilters = { agentId };
+      const filters: PropertySearchFilters = { agentId: ownerId };
       return await this.searchProperties(filters, options);
     } catch (error) {
-      logger.error('Error getting properties by agent', { error, agentId, options });
-      throw new AppError('Failed to get agent properties', 500);
+      logger.error('Error getting properties by owner', { error, ownerId, options });
+      throw new AppError('Failed to get owner properties', 500);
     }
   }
 
@@ -467,8 +433,7 @@ export class PropertyService {
           bedrooms: true,
           bathrooms: true,
           city: true,
-          state: true,
-          zipCode: true
+          county: true
         }
       });
 
@@ -488,7 +453,7 @@ export class PropertyService {
           },
           OR: [
             { city: property.city },
-            { zipCode: property.zipCode },
+            { county: property.county },
             { 
               AND: [
                 { bedrooms: property.bedrooms },
@@ -500,11 +465,7 @@ export class PropertyService {
         },
         take: limit,
         include: {
-          images: {
-            take: 1,
-            orderBy: { order: 'asc' }
-          },
-          agent: {
+          owner: {
             select: {
               id: true,
               firstName: true,
@@ -515,7 +476,7 @@ export class PropertyService {
           _count: {
             select: {
               favorites: true,
-              reviews: true
+              inquiries: true
             }
           }
         },
@@ -523,7 +484,7 @@ export class PropertyService {
           { city: property.city ? 'asc' : 'desc' },
           { createdAt: 'desc' }
         ]
-      });
+      }) as any;
 
       return similarProperties.map(this.formatPropertySummary);
     } catch (error) {
@@ -544,13 +505,11 @@ export class PropertyService {
           _count: {
             select: {
               favorites: true,
-              inquiries: true,
-              reviews: true,
-              appointments: true
+              inquiries: true
             }
           }
         }
-      });
+      }) as any;
 
       if (!property) {
         throw new AppError('Property not found', 404);
@@ -563,26 +522,36 @@ export class PropertyService {
       // Note: This would require a separate analytics table in production
       const analytics: PropertyAnalytics = {
         propertyId,
-        views: property.views,
-        favorites: property._count.favorites,
-        inquiries: property._count.inquiries,
-        appointments: property._count.appointments,
-        reviews: property._count.reviews,
-        averageRating: 0, // Calculate from reviews
-        viewsLast30Days: 0, // Would need analytics table
-        inquiriesLast30Days: 0, // Would need analytics table
-        appointmentsLast30Days: 0, // Would need analytics table
-        conversionRate: 0, // Calculate based on views vs inquiries
-        daysOnMarket: Math.floor(
-          (new Date().getTime() - property.createdAt.getTime()) / (1000 * 60 * 60 * 24)
-        ),
-        pricePerSquareFoot: property.squareFootage 
-          ? Math.round(property.price / property.squareFootage)
-          : null,
-        marketComparison: {
-          averagePrice: 0,
-          averageDaysOnMarket: 0,
-          totalListings: 0
+        views: {
+          total: property.views || 0,
+          unique: property.views || 0, // TODO: Calculate unique views
+          thisWeek: 0, // TODO: Calculate from analytics table
+          thisMonth: 0, // TODO: Calculate from analytics table
+          trend: 'stable' as const
+        },
+        favorites: {
+          total: property._count.favorites,
+          thisWeek: 0, // TODO: Calculate from analytics table
+          thisMonth: 0 // TODO: Calculate from analytics table
+        },
+        inquiries: {
+          total: property._count.inquiries,
+          thisWeek: 0, // TODO: Calculate from analytics table
+          thisMonth: 0, // TODO: Calculate from analytics table
+          conversionRate: 0 // TODO: Calculate based on views vs inquiries
+        },
+        performance: {
+          daysOnMarket: Math.floor(
+            (new Date().getTime() - property.createdAt.getTime()) / (1000 * 60 * 60 * 24)
+          ),
+          priceChanges: 0, // TODO: Calculate from price history
+          averageViewTime: 0, // TODO: Calculate from analytics
+          bounceRate: 0 // TODO: Calculate from analytics
+        },
+        demographics: {
+          topCities: {}, // TODO: Calculate from visitor data
+          ageGroups: {}, // TODO: Calculate from visitor data
+          deviceTypes: {} // TODO: Calculate from visitor data
         }
       };
 
@@ -598,6 +567,7 @@ export class PropertyService {
    * Format property summary for search results
    */
   private formatPropertySummary(property: any): PropertySummary {
+    const images = property.images ? JSON.parse(property.images) : [];
     return {
       id: property.id,
       title: property.title,
@@ -606,26 +576,35 @@ export class PropertyService {
       listingType: property.listingType,
       status: property.status,
       price: property.price,
+      currency: property.currency,
+      pricePerSqft: property.squareFootage ? property.price / property.squareFootage : undefined,
       bedrooms: property.bedrooms,
       bathrooms: property.bathrooms,
       squareFootage: property.squareFootage,
+      yearBuilt: property.yearBuilt,
       address: property.address,
       city: property.city,
-      state: property.state,
-      zipCode: property.zipCode,
-      latitude: property.latitude,
-      longitude: property.longitude,
-      mainImage: property.images[0]?.url || null,
-      agent: property.agent,
-      agency: property.agency,
+      county: property.county,
+      coordinates: {
+        lat: property.latitude || 0,
+        lng: property.longitude || 0
+      },
+      mainImage: images[0]?.url || null,
+      imageCount: images.length,
+      hasVirtualTour: !!property.virtualTour,
+      hasVideo: false, // TODO: Add video support
+      agent: property.owner ? {
+        id: property.owner.id,
+        firstName: property.owner.firstName,
+        lastName: property.owner.lastName,
+        avatar: property.owner.avatar,
+        phone: property.owner.phone
+      } : undefined,
+      viewCount: 0, // TODO: Implement view tracking
+      favoriteCount: property._count?.favorites || 0,
+      inquiryCount: property._count?.inquiries || 0,
       createdAt: property.createdAt,
-      updatedAt: property.updatedAt,
-      stats: {
-        views: property.views,
-        favorites: property._count?.favorites || 0,
-        inquiries: property._count?.inquiries || 0,
-        reviews: property._count?.reviews || 0
-      }
+      updatedAt: property.updatedAt
     };
   }
 
@@ -637,28 +616,17 @@ export class PropertyService {
       ...this.formatPropertySummary(property),
       description: property.description,
       yearBuilt: property.yearBuilt,
-      lotSize: property.lotSize,
-      parkingSpaces: property.parkingSpaces,
-      features: property.features,
-      amenities: property.amenities,
-      neighborhood: property.neighborhood,
-      schoolDistrict: property.schoolDistrict,
-      hoaFees: property.hoaFees,
-      propertyTaxes: property.propertyTaxes,
-      images: property.images,
-      videos: property.videos,
-      documents: property.documents,
-      virtualTours: property.virtualTours,
-      reviews: property.reviews,
-      priceHistory: property.priceHistory,
-      isFavorited,
-      stats: {
-        views: property.views,
-        favorites: property._count?.favorites || 0,
-        inquiries: property._count?.inquiries || 0,
-        reviews: property._count?.reviews || 0,
-        appointments: property._count?.appointments || 0
-      }
+      features: property.features ? JSON.parse(property.features) : [],
+      amenities: property.amenities ? JSON.parse(property.amenities) : [],
+      appliances: [], // TODO: Add appliances field to schema
+      utilities: [], // TODO: Add utilities field to schema
+      flooring: [], // TODO: Add flooring field to schema
+      renovated: false, // TODO: Add renovated field to schema
+      images: property.images ? JSON.parse(property.images) : [],
+      videos: [], // TODO: Add videos field to schema
+      virtualTour: property.virtualTour,
+      keywords: [], // TODO: Add keywords field to schema
+      reviewCount: 0 // TODO: Implement reviews
     };
   }
 

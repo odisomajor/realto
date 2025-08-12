@@ -39,7 +39,7 @@ const AlertDialog = React.forwardRef<
         {React.Children.map(children, (child) => {
           if (React.isValidElement(child)) {
             return React.cloneElement(child, {
-              ...child.props,
+              ...(child.props as any),
               onOpenChange: handleOpenChange,
             })
           }

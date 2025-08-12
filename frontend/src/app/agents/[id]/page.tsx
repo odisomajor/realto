@@ -35,7 +35,7 @@ const mockAgent: Agent = {
     phone: "+254711000000",
     location: "Westlands, Nairobi",
     website: "https://premiumrealty.co.ke",
-    logo: "https://picsum.photos/100/50?random=20"
+    logo: "/images/company-logo-1.jpg"
   },
   specializations: ["Luxury Homes", "Commercial Properties", "Investment Properties", "Land Sales"],
   experience: 8,
@@ -62,7 +62,7 @@ const agentProperties: Property[] = [
     type: "sale",
     category: "residential",
     status: "available",
-    images: ["https://picsum.photos/400/300?random=21"],
+    images: ["/images/property-3.jpg"],
     features: ["Parking", "Swimming Pool", "Gym", "Security"],
     agent: {
       id: "1",
@@ -86,7 +86,7 @@ const agentProperties: Property[] = [
     type: "sale",
     category: "commercial",
     status: "available",
-    images: ["https://picsum.photos/400/300?random=22"],
+    images: ["/images/property-2.jpg"],
     features: ["Elevator", "Parking", "Security", "Air Conditioning"],
     agent: {
       id: "1",

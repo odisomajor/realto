@@ -3,29 +3,12 @@ import nodemailer from 'nodemailer';
 import twilio from 'twilio';
 import Redis from 'ioredis';
 import { logger } from '@/utils/logger';
-import { AppError } from '@/middleware/errorHandler';
+import { AppError } from '@/utils/errors';
 import { config } from '@/config/database';
 import { v4 as uuidv4 } from 'uuid';
+import { NotificationType } from '../types/property';
 
-// Notification types
-export enum NotificationType {
-  PROPERTY_INQUIRY = 'PROPERTY_INQUIRY',
-  APPOINTMENT_SCHEDULED = 'APPOINTMENT_SCHEDULED',
-  APPOINTMENT_REMINDER = 'APPOINTMENT_REMINDER',
-  PROPERTY_APPROVED = 'PROPERTY_APPROVED',
-  PROPERTY_REJECTED = 'PROPERTY_REJECTED',
-  NEW_REVIEW = 'NEW_REVIEW',
-  PRICE_CHANGE = 'PRICE_CHANGE',
-  FAVORITE_PROPERTY_UPDATE = 'FAVORITE_PROPERTY_UPDATE',
-  ACCOUNT_VERIFICATION = 'ACCOUNT_VERIFICATION',
-  PASSWORD_RESET = 'PASSWORD_RESET',
-  WELCOME = 'WELCOME',
-  SYSTEM_MAINTENANCE = 'SYSTEM_MAINTENANCE',
-  PAYMENT_CONFIRMATION = 'PAYMENT_CONFIRMATION',
-  SUBSCRIPTION_EXPIRY = 'SUBSCRIPTION_EXPIRY',
-  NEW_MESSAGE = 'NEW_MESSAGE',
-  PROPERTY_MATCH = 'PROPERTY_MATCH'
-}
+const { cache } = config;
 
 // Notification channels
 export enum NotificationChannel {

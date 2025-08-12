@@ -6,56 +6,6 @@ import { Card, CardContent } from '@/components/ui/Card'
 import { Property } from '@/types'
 import { formatPrice, formatArea } from '@/lib/utils'
 
-// Lazy Image Component
-const LazyImage: React.FC<{
-  src: string;
-  alt: string;
-  className?: string;
-  onLoad?: () => void;
-}> = ({ src, alt, className, onLoad }) => {
-  const [isLoaded, setIsLoaded] = useState(false);
-  const [isInView, setIsInView] = useState(false);
-  const imgRef = useRef<HTMLImageElement>(null);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setIsInView(true);
-          observer.disconnect();
-        }
-      },
-      { threshold: 0.1 }
-    );
-
-    if (imgRef.current) {
-      observer.observe(imgRef.current);
-    }
-
-    return () => observer.disconnect();
-  }, []);
-
-  return (
-    <div ref={imgRef} className={className}>
-      {isInView && (
-        <img
-          src={src}
-          alt={alt}
-          className={`transition-opacity duration-300 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}
-          onLoad={() => {
-            setIsLoaded(true);
-            onLoad?.();
-          }}
-          loading="lazy"
-        />
-      )}
-      {!isLoaded && isInView && (
-        <div className="animate-pulse bg-gray-200 w-full h-full" />
-      )}
-    </div>
-  );
-};
-
 interface PropertyCardProps {
   property: Property
 }
@@ -81,10 +31,13 @@ const PropertyCard = React.memo<PropertyCardProps>(({ property }) => {
     <Card className="overflow-hidden hover:shadow-lg transition-shadow duration-300">
       <Link href={`/properties/${id}`}>
         <div className="relative">
-          <LazyImage
+          <Image
             src={property.images?.[0] || '/placeholder-property.jpg'}
             alt={property.title}
+            width={400}
+            height={250}
             className="w-full h-48 object-cover"
+            priority={false}
           />
           <div className="absolute top-3 left-3">
             <span className={`inline-block px-2 py-1 text-xs font-semibold rounded-full ${
@@ -94,7 +47,7 @@ const PropertyCard = React.memo<PropertyCardProps>(({ property }) => {
                   ? 'bg-blue-100 text-blue-800'
                   : 'bg-orange-100 text-orange-800'
               }`}>
-              {type === 'sale' ? 'For Sale' : type === 'rent' ? 'For Rent' : 'Upcoming Project'}
+              {type === 'sale' ? 'For Sale' : 'For Rent'}
             </span>
           </div>
           <div className="absolute top-3 right-3">
@@ -129,10 +82,9 @@ const PropertyCard = React.memo<PropertyCardProps>(({ property }) => {
           <div className="flex items-center text-green-600">
             <BanknotesIcon className="h-5 w-5 mr-1" />
             <span className="text-xl font-bold">
-              {type === 'upcoming' ? `From ${formatPrice(price)}` : formatPrice(price)}
+              {formatPrice(price)}
             </span>
             {type === 'rent' && <span className="text-sm text-gray-500 ml-1">/month</span>}
-            {type === 'upcoming' && <span className="text-sm text-gray-500 ml-1">expected</span>}
           </div>
         </div>
 

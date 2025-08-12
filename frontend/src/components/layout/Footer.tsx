@@ -15,7 +15,6 @@ const Footer = () => {
     properties: [
       { name: 'Buy Properties', href: '/properties?type=sale' },
       { name: 'Rent Properties', href: '/properties?type=rent' },
-      { name: 'Upcoming Projects', href: '/properties?type=upcoming' },
       { name: 'Commercial', href: '/properties?category=commercial' },
       { name: 'Land', href: '/properties?category=land' },
     ],

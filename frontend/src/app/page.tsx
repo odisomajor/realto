@@ -21,7 +21,7 @@ const featuredProperties: Property[] = [
     type: "sale",
     category: "residential",
     status: "available",
-    images: ["https://picsum.photos/400/300?random=1"],
+    images: ["/images/property-1.jpg"],
     features: ["Parking", "Swimming Pool", "Gym", "Security"],
     agent: {
       id: "1",
@@ -45,7 +45,7 @@ const featuredProperties: Property[] = [
     type: "sale",
     category: "residential",
     status: "available",
-    images: ["https://picsum.photos/400/300?random=2"],
+    images: ["/images/property-2.jpg"],
     features: ["Garden", "Parking", "Security", "Fireplace"],
     agent: {
       id: "2",
@@ -69,7 +69,7 @@ const featuredProperties: Property[] = [
     type: "sale",
     category: "land",
     status: "available",
-    images: ["https://picsum.photos/400/300?random=3"],
+    images: ["/images/property-3.jpg"],
     features: ["Water Access", "Electricity", "Road Access", "Title Deed"],
     agent: {
       id: "3",
@@ -98,7 +98,7 @@ const featuredAgents: Agent[] = [
       phone: "+254711000000",
       location: "Westlands, Nairobi",
       website: "https://premiumrealty.co.ke",
-      logo: "https://picsum.photos/100/50?random=10"
+      logo: "/images/company-logo-1.jpg"
     },
     specializations: ["Luxury Homes", "Commercial Properties", "Investment Properties"],
     experience: 8,
@@ -123,7 +123,7 @@ const featuredAgents: Agent[] = [
       phone: "+254722000000",
       location: "Kilimani, Nairobi",
       website: "https://elitehomes.co.ke",
-      logo: "https://picsum.photos/100/50?random=11"
+      logo: "/images/company-logo-2.jpg"
     },
     specializations: ["Luxury Residential", "High-end Commercial", "Property Management"],
     experience: 6,
@@ -148,7 +148,7 @@ const featuredAgents: Agent[] = [
       phone: "+254733000000",
       location: "Ngong Road, Nairobi",
       website: "https://landexperts.co.ke",
-      logo: "https://picsum.photos/100/50?random=12"
+      logo: "/images/company-logo-3.jpg"
     },
     specializations: ["Land Sales", "Agricultural Properties", "Rural Development"],
     experience: 12,

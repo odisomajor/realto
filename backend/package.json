@@ -16,7 +16,8 @@
     "format": "prettier --write src/**/*.{js,ts}",
     "prisma:generate": "prisma generate",
     "prisma:push": "prisma db push",
-    "prisma:studio": "prisma studio"
+    "prisma:studio": "prisma studio",
+    "seed": "node seed.js"
   },
   "keywords": [
     "real-estate",
@@ -29,6 +30,7 @@
   "license": "MIT",
   "dependencies": {
     "@prisma/client": "^5.7.1",
+    "@types/uuid": "^10.0.0",
     "africastalking": "^0.7.3",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
@@ -46,6 +48,7 @@
     "speakeasy": "^2.0.0",
     "tsconfig-paths": "^4.2.0",
     "twilio": "^5.8.0",
+    "uuid": "^11.1.0",
     "web-push": "^3.6.7",
     "winston": "^3.11.0",
     "zod": "^3.22.4"

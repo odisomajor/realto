@@ -1,7 +1,8 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
-import { PrismaClient, User, UserRole } from '@prisma/client';
+import { PrismaClient, User } from '@prisma/client';
+import { UserRole } from '../types/auth';
 import { 
   JWTPayload, 
   RefreshTokenPayload, 

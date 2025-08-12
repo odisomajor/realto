@@ -93,8 +93,7 @@ const PROPERTY_TYPES = [
 
 const LISTING_TYPES = [
   { value: 'FOR_SALE', label: 'For Sale' },
-  { value: 'FOR_RENT', label: 'For Rent' },
-  { value: 'UPCOMING', label: 'Upcoming Project' }
+  { value: 'FOR_RENT', label: 'For Rent' }
 ]
 
 const KENYA_COUNTIES = [
