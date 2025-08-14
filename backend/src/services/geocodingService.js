@@ -31,16 +31,19 @@ class GeocodingService {
 
       const result = response.data.results[0];
       const location = result.geometry.location;
-      
+
       // Extract county and city from address components
       let county = null;
       let city = null;
-      
+
       result.address_components.forEach(component => {
         if (component.types.includes('administrative_area_level_1')) {
           county = component.long_name;
         }
-        if (component.types.includes('locality') || component.types.includes('administrative_area_level_2')) {
+        if (
+          component.types.includes('locality') ||
+          component.types.includes('administrative_area_level_2')
+        ) {
           city = component.long_name;
         }
       });
@@ -83,16 +86,19 @@ class GeocodingService {
       }
 
       const result = response.data.results[0];
-      
+
       // Extract county and city from address components
       let county = null;
       let city = null;
-      
+
       result.address_components.forEach(component => {
         if (component.types.includes('administrative_area_level_1')) {
           county = component.long_name;
         }
-        if (component.types.includes('locality') || component.types.includes('administrative_area_level_2')) {
+        if (
+          component.types.includes('locality') ||
+          component.types.includes('administrative_area_level_2')
+        ) {
           city = component.long_name;
         }
       });
@@ -120,11 +126,14 @@ class GeocodingService {
     const R = 6371; // Earth's radius in kilometers
     const dLat = this.toRadians(lat2 - lat1);
     const dLng = this.toRadians(lng2 - lng1);
-    
-    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-              Math.cos(this.toRadians(lat1)) * Math.cos(this.toRadians(lat2)) *
-              Math.sin(dLng / 2) * Math.sin(dLng / 2);
-    
+
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(this.toRadians(lat1)) *
+        Math.cos(this.toRadians(lat2)) *
+        Math.sin(dLng / 2) *
+        Math.sin(dLng / 2);
+
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     return R * c;
   }
@@ -173,7 +182,12 @@ class GeocodingService {
         vicinity: place.vicinity,
         types: place.types,
         location: place.geometry.location,
-        distance: this.calculateDistance(lat, lng, place.geometry.location.lat, place.geometry.location.lng)
+        distance: this.calculateDistance(
+          lat,
+          lng,
+          place.geometry.location.lat,
+          place.geometry.location.lng
+        )
       }));
     } catch (error) {
       console.error('Places API error:', error);

@@ -84,15 +84,20 @@ export interface NotificationPreferences {
   sms: boolean;
   push: boolean;
   inApp: boolean;
-  types: Partial<Record<NotificationType, {
-    email: boolean;
-    sms: boolean;
-    push: boolean;
-    inApp: boolean;
-  }>>;
+  types: Partial<
+    Record<
+      NotificationType,
+      {
+        email: boolean;
+        sms: boolean;
+        push: boolean;
+        inApp: boolean;
+      }
+    >
+  >;
   quietHours?: {
     start: string; // HH:mm format
-    end: string;   // HH:mm format
+    end: string; // HH:mm format
     timezone: string;
   };
 }
@@ -126,7 +131,7 @@ class NotificationService extends EventEmitter {
       });
 
       // Verify connection
-      this.emailTransporter.verify((error) => {
+      this.emailTransporter.verify(error => {
         if (error) {
           logger.error('Email transporter verification failed:', error);
         } else {
@@ -212,7 +217,14 @@ class NotificationService extends EventEmitter {
             </div>
             <a href="{{propertyUrl}}" style="background: #28a745; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">View Property</a>
           `,
-          variables: ['propertyTitle', 'inquirerName', 'inquirerEmail', 'inquirerPhone', 'inquiryMessage', 'propertyUrl'],
+          variables: [
+            'propertyTitle',
+            'inquirerName',
+            'inquirerEmail',
+            'inquirerPhone',
+            'inquiryMessage',
+            'propertyUrl'
+          ],
           isActive: true
         }
       ];
@@ -232,11 +244,11 @@ class NotificationService extends EventEmitter {
     this.on('property:inquiry', this.handlePropertyInquiry.bind(this));
     this.on('property:approved', this.handlePropertyApproved.bind(this));
     this.on('property:rejected', this.handlePropertyRejected.bind(this));
-    
+
     // Listen for user events
     this.on('user:registered', this.handleUserRegistered.bind(this));
     this.on('user:verified', this.handleUserVerified.bind(this));
-    
+
     // Listen for appointment events
     this.on('appointment:scheduled', this.handleAppointmentScheduled.bind(this));
     this.on('appointment:reminder', this.handleAppointmentReminder.bind(this));
@@ -246,7 +258,7 @@ class NotificationService extends EventEmitter {
   public async sendNotification(notificationData: NotificationData): Promise<void> {
     try {
       const notificationId = notificationData.id || uuidv4();
-      
+
       // Check user preferences
       const preferences = await this.getUserPreferences(notificationData.userId);
       const filteredChannels = this.filterChannelsByPreferences(
@@ -256,18 +268,23 @@ class NotificationService extends EventEmitter {
       );
 
       if (filteredChannels.length === 0) {
-        logger.info(`No enabled channels for user ${notificationData.userId}, notification type ${notificationData.type}`);
+        logger.info(
+          `No enabled channels for user ${notificationData.userId}, notification type ${notificationData.type}`
+        );
         return;
       }
 
       // Check quiet hours
       if (this.isInQuietHours(preferences)) {
-        await this.scheduleNotification(notificationData, new Date(Date.now() + this.getQuietHoursDelay(preferences)));
+        await this.scheduleNotification(
+          notificationData,
+          new Date(Date.now() + this.getQuietHoursDelay(preferences))
+        );
         return;
       }
 
       // Send through each channel
-      const promises = filteredChannels.map(channel => 
+      const promises = filteredChannels.map(channel =>
         this.sendThroughChannel(channel, notificationData, notificationId)
       );
 
@@ -317,11 +334,14 @@ class NotificationService extends EventEmitter {
   }
 
   // Email sending
-  private async sendEmail(notificationData: NotificationData, notificationId: string): Promise<void> {
+  private async sendEmail(
+    notificationData: NotificationData,
+    notificationId: string
+  ): Promise<void> {
     try {
       const user = await this.getUserDetails(notificationData.userId);
       const template = this.getTemplate(notificationData.type, NotificationChannel.EMAIL);
-      
+
       if (!template) {
         throw new Error(`No email template found for ${notificationData.type}`);
       }
@@ -364,13 +384,13 @@ class NotificationService extends EventEmitter {
       }
 
       const user = await this.getUserDetails(notificationData.userId);
-      
+
       if (!user.phone) {
         throw new Error('User phone number not available');
       }
 
       const template = this.getTemplate(notificationData.type, NotificationChannel.SMS);
-      const message = template 
+      const message = template
         ? this.renderTemplate(template.template, notificationData.data)
         : notificationData.message;
 
@@ -388,11 +408,14 @@ class NotificationService extends EventEmitter {
   }
 
   // Push notification sending
-  private async sendPushNotification(notificationData: NotificationData, notificationId: string): Promise<void> {
+  private async sendPushNotification(
+    notificationData: NotificationData,
+    notificationId: string
+  ): Promise<void> {
     try {
       // This would integrate with Firebase Cloud Messaging, Apple Push Notification Service, etc.
       // For now, we'll store it for WebSocket delivery
-      
+
       const pushData = {
         id: notificationId,
         userId: notificationData.userId,
@@ -403,13 +426,15 @@ class NotificationService extends EventEmitter {
       };
 
       // Store in Redis for real-time delivery
-        await config.redis.lpush(`push:${notificationData.userId}`, JSON.stringify(pushData));
-        await config.redis.expire(`push:${notificationData.userId}`, 86400); // 24 hours
+      await config.redis.lpush(`push:${notificationData.userId}`, JSON.stringify(pushData));
+      await config.redis.expire(`push:${notificationData.userId}`, 86400); // 24 hours
 
       // Emit event for WebSocket delivery
       this.emit('push:notification', pushData);
 
-      logger.info(`Push notification queued: ${notificationId} for user ${notificationData.userId}`);
+      logger.info(
+        `Push notification queued: ${notificationId} for user ${notificationData.userId}`
+      );
     } catch (error) {
       logger.error('Failed to send push notification:', error);
       throw error;
@@ -417,10 +442,13 @@ class NotificationService extends EventEmitter {
   }
 
   // Webhook sending
-  private async sendWebhook(notificationData: NotificationData, notificationId: string): Promise<void> {
+  private async sendWebhook(
+    notificationData: NotificationData,
+    notificationId: string
+  ): Promise<void> {
     try {
       const webhookUrl = await this.getUserWebhookUrl(notificationData.userId);
-      
+
       if (!webhookUrl) {
         return; // No webhook configured
       }
@@ -457,7 +485,10 @@ class NotificationService extends EventEmitter {
   }
 
   // Schedule notification for later delivery
-  public async scheduleNotification(notificationData: NotificationData, scheduledAt: Date): Promise<string> {
+  public async scheduleNotification(
+    notificationData: NotificationData,
+    scheduledAt: Date
+  ): Promise<string> {
     try {
       const notificationId = notificationData.id || uuidv4();
       const delay = scheduledAt.getTime() - Date.now();
@@ -514,14 +545,14 @@ class NotificationService extends EventEmitter {
       }
 
       for (const batch of batches) {
-        const promises = batch.map(notification => 
+        const promises = batch.map(notification =>
           this.sendNotification(notification).catch(error => {
             logger.error(`Failed to send bulk notification to user ${notification.userId}:`, error);
           })
         );
 
         await Promise.allSettled(promises);
-        
+
         // Small delay between batches to avoid overwhelming services
         await new Promise(resolve => setTimeout(resolve, 100));
       }
@@ -749,13 +780,16 @@ class NotificationService extends EventEmitter {
     return 8 * 60 * 60 * 1000; // 8 hours in milliseconds
   }
 
-  private getTemplate(type: NotificationType, channel: NotificationChannel): NotificationTemplate | undefined {
+  private getTemplate(
+    type: NotificationType,
+    channel: NotificationChannel
+  ): NotificationTemplate | undefined {
     return this.templates.get(`${type}-${channel}`);
   }
 
   private renderTemplate(template: string, data: Record<string, any>): string {
     let rendered = template;
-    
+
     for (const [key, value] of Object.entries(data)) {
       const regex = new RegExp(`{{${key}}}`, 'g');
       rendered = rendered.replace(regex, String(value || ''));
@@ -765,10 +799,16 @@ class NotificationService extends EventEmitter {
   }
 
   private stripHtml(html: string): string {
-    return html.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
+    return html
+      .replace(/<[^>]*>/g, '')
+      .replace(/\s+/g, ' ')
+      .trim();
   }
 
-  private async storeInAppNotification(notificationData: NotificationData, notificationId: string): Promise<void> {
+  private async storeInAppNotification(
+    notificationData: NotificationData,
+    notificationId: string
+  ): Promise<void> {
     try {
       // Store in database for in-app notifications
       // This is a placeholder - implement with your ORM
@@ -799,7 +839,11 @@ class NotificationService extends EventEmitter {
   }
 
   // Public methods for external use
-  public async getInAppNotifications(userId: string, page: number = 1, limit: number = 20): Promise<{
+  public async getInAppNotifications(
+    userId: string,
+    page: number = 1,
+    limit: number = 20
+  ): Promise<{
     notifications: any[];
     total: number;
     unreadCount: number;
@@ -810,7 +854,7 @@ class NotificationService extends EventEmitter {
 
       const notifications = await config.redis.lrange(`notifications:${userId}`, start, end);
       const total = await config.redis.llen(`notifications:${userId}`);
-      
+
       const parsedNotifications = notifications.map(n => JSON.parse(n));
       const unreadCount = parsedNotifications.filter(n => !n.isRead).length;
 
@@ -854,11 +898,14 @@ class NotificationService extends EventEmitter {
     }
   }
 
-  public async updateUserPreferences(userId: string, preferences: Partial<NotificationPreferences>): Promise<void> {
+  public async updateUserPreferences(
+    userId: string,
+    preferences: Partial<NotificationPreferences>
+  ): Promise<void> {
     try {
       // Update in database
       // This is a placeholder - implement with your ORM
-      
+
       logger.info(`Notification preferences updated for user: ${userId}`);
     } catch (error) {
       logger.error('Failed to update notification preferences:', error);
