@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { mockProperties } from './mockData'
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'
 
@@ -41,8 +42,23 @@ api.interceptors.response.use(
 
 // Property API endpoints
 export const propertyApi = {
-  getProperties: (params?: any) => api.get('/properties', { params }),
-  getProperty: (id: string) => api.get(`/properties/${id}`),
+  getProperties: async (params?: any) => {
+    try {
+      return await api.get('/properties', { params })
+    } catch (error) {
+      console.warn('API call failed, using mock data')
+      return { data: { data: mockProperties } }
+    }
+  },
+  getProperty: async (id: string) => {
+    try {
+      return await api.get(`/properties/${id}`)
+    } catch (error) {
+      console.warn('API call failed, using mock data')
+      const property = mockProperties.find(p => p.id === id)
+      return { data: { data: property } }
+    }
+  },
   createProperty: (data: any) => api.post('/properties', data),
   updateProperty: (id: string, data: any) => api.put(`/properties/${id}`, data),
   deleteProperty: (id: string) => api.delete(`/properties/${id}`),
