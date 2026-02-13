@@ -13,7 +13,7 @@ YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
 # Configuration
-SERVER_IP="143.110.159.40"
+SERVER_IP="165.232.137.184"
 PROJECT_DIR="/var/www/xillix"
 DB_NAME="realestate_prod"
 DB_USER="realestate"
