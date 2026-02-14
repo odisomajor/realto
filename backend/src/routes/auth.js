@@ -5,6 +5,7 @@ const { registerSchema, loginSchema } = require('../utils/validation');
 const {
   register,
   login,
+  logout,
   getProfile,
   updateProfile,
   changePassword
@@ -15,6 +16,7 @@ const router = express.Router();
 // Public routes
 router.post('/register', validate(registerSchema), register);
 router.post('/login', validate(loginSchema), login);
+router.post('/logout', logout);
 
 // Protected routes
 router.get('/profile', authenticateToken, getProfile);

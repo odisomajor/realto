@@ -1,12 +1,17 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { PrismaClient } = require('@prisma/client');
+const { sendWelcomeEmail } = require('../utils/email');
 
 const prisma = new PrismaClient();
 
 // Generate JWT token
-const generateToken = (userId) => {
-  return jwt.sign({ userId }, process.env.JWT_SECRET, { expiresIn: '7d' });
+const generateToken = (user) => {
+  return jwt.sign(
+    { userId: user.id, email: user.email, role: user.role },
+    process.env.JWT_SECRET,
+    { expiresIn: '7d' }
+  );
 };
 
 // Register new user
@@ -38,12 +43,11 @@ const register = async (req, res) => {
       }
     });
 
+    // Send welcome email
+    sendWelcomeEmail(user);
+
     // Generate JWT token
-    const token = jwt.sign(
-      { userId: user.id, email: user.email, role: user.role },
-      process.env.JWT_SECRET,
-      { expiresIn: '7d' }
-    );
+    const token = generateToken(user);
 
     // Remove password from response
     const { password: _, ...userWithoutPassword } = user;
@@ -80,7 +84,7 @@ const login = async (req, res) => {
     }
 
     // Check if user is active
-    if (!user.isActive) {
+    if (user.isActive === false) { // Explicit check
       return res.status(401).json({ error: 'Account is deactivated' });
     }
 
@@ -91,7 +95,7 @@ const login = async (req, res) => {
     });
 
     // Generate token
-    const token = generateToken(user.id);
+    const token = generateToken(user);
 
     // Return user data without password
     const { password: _, ...userWithoutPassword } = user;
@@ -105,6 +109,11 @@ const login = async (req, res) => {
     console.error('Login error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
+};
+
+// Logout user
+const logout = async (req, res) => {
+  res.json({ message: 'Logged out successfully' });
 };
 
 // Get current user profile
@@ -236,6 +245,7 @@ const changePassword = async (req, res) => {
 module.exports = {
   register,
   login,
+  logout,
   getProfile,
   updateProfile,
   changePassword

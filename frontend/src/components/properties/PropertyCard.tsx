@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react'
+import React from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { MapPinIcon, HomeIcon, BanknotesIcon } from '@heroicons/react/24/outline'
@@ -24,8 +24,6 @@ const PropertyCard = React.memo<PropertyCardProps>(({ property }) => {
     images,
     status,
   } = property
-
-  const primaryImage = images[0] || '/placeholder-property.jpg'
 
   return (
     <Card className="overflow-hidden hover:shadow-lg transition-shadow duration-300">
