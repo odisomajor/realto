@@ -43,7 +43,7 @@ export const mockProperties: Property[] = [
     category: 'residential',
     status: 'available',
     features: ['Swimming Pool', 'Garden', 'Security', 'Parking', 'Gym'],
-    images: ['/images/property-1.jpg'],
+    images: ['/images/property-1.svg'],
     agent: {
       id: 'a1',
       name: 'John Doe',
@@ -69,7 +69,7 @@ export const mockProperties: Property[] = [
     category: 'residential',
     status: 'available',
     features: ['Elevator', 'Backup Generator', 'CCTV', 'Borehole'],
-    images: ['/images/property-2.jpg'],
+    images: ['/images/property-2.svg'],
     agent: {
       id: 'a2',
       name: 'Jane Smith',
@@ -95,7 +95,7 @@ export const mockProperties: Property[] = [
     category: 'commercial',
     status: 'available',
     features: ['High Speed Internet', 'Parking', 'Security', 'Reception'],
-    images: ['/images/property-3.jpg'],
+    images: ['/images/property-3.svg'],
     agent: {
       id: 'a3',
       name: 'Michael Brown',
@@ -120,7 +120,7 @@ export const mockProperties: Property[] = [
     category: 'residential',
     status: 'available',
     features: ['Furnished', 'Pool', 'Gym', 'Internet'],
-    images: ['/images/property-1.jpg'],
+    images: ['/images/property-1.svg'],
     agent: {
       id: 'a1',
       name: 'John Doe',
