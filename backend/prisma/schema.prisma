@@ -17,6 +17,7 @@ model User {
   phone     String?
   avatar    String?
   role      String @default("USER") // USER, AGENT, ADMIN, SUPER_ADMIN
+  isActive  Boolean @default(true)
 
   // Profile
   bio      String?
