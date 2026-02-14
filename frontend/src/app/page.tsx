@@ -23,7 +23,11 @@ async function getFeaturedProperties(): Promise<Property[]> {
     }
     
     const json = await res.json();
-    return (json.data as Property[]) || [];
+    const data = json.data;
+    if (Array.isArray(data)) {
+      return data as Property[];
+    }
+    return [];
   } catch (error) {
     console.error('Error fetching featured properties:', error);
     return [];
@@ -129,7 +133,7 @@ export default async function Home() {
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
-            {featuredProperties.map((property) => (
+            {featuredProperties.map((property: Property) => (
               <PropertyCard key={property.id} property={property} />
             ))}
           </div>
