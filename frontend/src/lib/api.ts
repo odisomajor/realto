@@ -46,17 +46,16 @@ export const propertyApi = {
     try {
       return await api.get('/properties', { params })
     } catch (error) {
-      console.warn('API call failed, using mock data')
-      return { data: { data: mockProperties } }
+      console.error('API call failed', error)
+      throw error
     }
   },
   getProperty: async (id: string) => {
     try {
       return await api.get(`/properties/${id}`)
     } catch (error) {
-      console.warn('API call failed, using mock data')
-      const property = mockProperties.find(p => p.id === id)
-      return { data: { data: property } }
+      console.error('API call failed', error)
+      throw error
     }
   },
   createProperty: (data: any) => api.post('/properties', data),

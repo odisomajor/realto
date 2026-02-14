@@ -1,87 +1,34 @@
-'use client'
-
+import { Metadata } from 'next'
 import Hero from '@/components/home/Hero'
 import PropertyCard from '@/components/properties/PropertyCard'
 import AgentCard from '@/components/agents/AgentCard'
-import SEOHead from '@/components/SEO/SEOHead'
 import { Property, Agent } from '@/types'
-import { formatArea } from '@/lib/utils'
 
-// Mock data for featured properties
-const featuredProperties: Property[] = [
-  {
-    id: "1",
-    title: "Modern 3BR Apartment in Westlands",
-    description: "Luxurious apartment with stunning city views",
-    price: 15000000,
-    location: "Westlands, Nairobi",
-    bedrooms: 3,
-    bathrooms: 2,
-    area: 120, // 120 square meters
-    type: "sale",
-    category: "residential",
-    status: "available",
-    images: ["/images/property-1.jpg"],
-    features: ["Parking", "Swimming Pool", "Gym", "Security"],
-    agent: {
-      id: "1",
-      name: "John Doe",
-      email: "john@example.com",
-      phone: "+254700000000"
-    },
-    createdAt: "2024-01-01T00:00:00Z",
-    updatedAt: "2024-01-01T00:00:00Z",
-    featured: true
-  },
-  {
-    id: "2",
-    title: "Spacious 4BR House in Karen",
-    description: "Beautiful family home with large garden",
-    price: 25000000,
-    location: "Karen, Nairobi",
-    bedrooms: 4,
-    bathrooms: 3,
-    area: 200, // 200 square meters
-    type: "sale",
-    category: "residential",
-    status: "available",
-    images: ["/images/property-2.jpg"],
-    features: ["Garden", "Parking", "Security", "Fireplace"],
-    agent: {
-      id: "2",
-      name: "Jane Smith",
-      email: "jane@example.com",
-      phone: "+254700000001"
-    },
-    createdAt: "2024-01-02T00:00:00Z",
-    updatedAt: "2024-01-02T00:00:00Z",
-    featured: true
-  },
-  {
-    id: "3",
-    title: "Prime Land in Kiambu",
-    description: "Excellent investment opportunity with great potential",
-    price: 8000000,
-    location: "Kiambu, Kenya",
-    bedrooms: 0,
-    bathrooms: 0,
-    area: 8094, // 8094 square meters (equivalent to 2 acres)
-    type: "sale",
-    category: "land",
-    status: "available",
-    images: ["/images/property-3.jpg"],
-    features: ["Water Access", "Electricity", "Road Access", "Title Deed"],
-    agent: {
-      id: "3",
-      name: "Mike Johnson",
-      email: "mike@example.com",
-      phone: "+254700000002"
-    },
-    createdAt: "2024-01-03T00:00:00Z",
-    updatedAt: "2024-01-03T00:00:00Z",
-    featured: true
+export const metadata: Metadata = {
+  title: 'Xillix - Kenya Real Estate Portal | Properties for Sale & Rent',
+  description: 'Find your dream property in Kenya. Browse houses, land, commercial properties, warehouses, and rentals. Trusted real estate platform with verified listings across Nairobi, Mombasa, Kisumu, and all major cities.',
+}
+
+async function getFeaturedProperties() {
+  try {
+    // Use internal URL for server-side fetching
+    const apiUrl = process.env.API_URL || 'http://localhost:5000/api';
+    const res = await fetch(`${apiUrl}/properties?featured=true&limit=3`, {
+      next: { revalidate: 60 }
+    });
+    
+    if (!res.ok) {
+      console.error('Failed to fetch featured properties:', res.statusText);
+      return [];
+    }
+    
+    const json = await res.json();
+    return json.data || [];
+  } catch (error) {
+    console.error('Error fetching featured properties:', error);
+    return [];
   }
-];
+}
 
 // Mock data for featured agents
 const featuredAgents: Agent[] = [
@@ -162,14 +109,11 @@ const featuredAgents: Agent[] = [
   }
 ];
 
-export default function Home() {
+export default async function Home() {
+  const featuredProperties = await getFeaturedProperties();
+
   return (
     <div className="min-h-screen">
-      <SEOHead 
-        title="Xillix - Kenya Real Estate Portal | Properties for Sale & Rent"
-        description="Find your dream property in Kenya. Browse houses, land, commercial properties, warehouses, and rentals. Trusted real estate platform with verified listings across Nairobi, Mombasa, Kisumu, and all major cities."
-      />
-      
       <Hero />
       
       {/* Featured Properties Section */}
@@ -273,5 +217,5 @@ export default function Home() {
         </div>
       </section>
     </div>
-  );
+  )
 }
