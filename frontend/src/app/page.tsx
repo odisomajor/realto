@@ -9,7 +9,7 @@ export const metadata: Metadata = {
   description: 'Find your dream property in Kenya. Browse houses, land, commercial properties, warehouses, and rentals. Trusted real estate platform with verified listings across Nairobi, Mombasa, Kisumu, and all major cities.',
 }
 
-async function getFeaturedProperties() {
+async function getFeaturedProperties(): Promise<Property[]> {
   try {
     // Use internal URL for server-side fetching
     const apiUrl = process.env.API_URL || 'http://localhost:5000/api';
@@ -23,7 +23,7 @@ async function getFeaturedProperties() {
     }
     
     const json = await res.json();
-    return json.data || [];
+    return (json.data as Property[]) || [];
   } catch (error) {
     console.error('Error fetching featured properties:', error);
     return [];
