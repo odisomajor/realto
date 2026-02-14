@@ -4,6 +4,7 @@
 # This script automates the deployment process on a DigitalOcean Ubuntu Droplet using an IP address
 
 set -e
+export DEBIAN_FRONTEND=noninteractive
 
 # Colors for output
 RED='\033[0;31m'
