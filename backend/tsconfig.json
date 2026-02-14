@@ -5,6 +5,7 @@
     "lib": ["ES2022"],
     "module": "CommonJS",
     "moduleResolution": "node",
+    "noEmit": false,
     "outDir": "./dist",
     "rootDir": "./src",
     "baseUrl": "./src",
