@@ -110,9 +110,9 @@ fi
 
 # Install dependencies
 echo -e "${BLUE}📦 Installing dependencies...${NC}"
-npm install
-cd backend && npm install
-cd ../frontend && npm install
+npm install --legacy-peer-deps
+cd backend && npm install --legacy-peer-deps
+cd ../frontend && npm install --legacy-peer-deps
 cd ..
 print_status "Dependencies installed"
 
