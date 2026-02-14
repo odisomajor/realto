@@ -28,14 +28,14 @@ async function getProperty(id: string): Promise<Property | null> {
 }
 
 type Props = {
-  params: { id: string }
+  params: Promise<{ id: string }>
 }
 
 export async function generateMetadata(
   { params }: Props
 ): Promise<Metadata> {
   // read route params
-  const id = params.id
+  const { id } = await params
   
   // fetch data
   const property = await getProperty(id)
@@ -79,10 +79,11 @@ export async function generateMetadata(
 }
 
 export default async function PropertyDetailPage({ params }: Props) {
-  const property = await getProperty(params.id);
+  const { id } = await params;
+  const property = await getProperty(id);
 
   if (!property) {
-    return <PropertyDetailClient id={params.id} initialProperty={undefined} />;
+    return <PropertyDetailClient id={id} initialProperty={undefined} />;
   }
 
   const jsonLd = {
@@ -117,7 +118,7 @@ export default async function PropertyDetailPage({ params }: Props) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <PropertyDetailClient id={params.id} initialProperty={property} />
+      <PropertyDetailClient id={id} initialProperty={property} />
     </>
   );
 }
