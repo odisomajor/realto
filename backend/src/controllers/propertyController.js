@@ -633,6 +633,7 @@ const getUserProperties = async (req, res) => {
       yearBuilt: property.yearBuilt,
       virtualTour: property.virtualTour,
       slug: property.slug,
+      views: property.views,
       _count: property._count
     }));
 

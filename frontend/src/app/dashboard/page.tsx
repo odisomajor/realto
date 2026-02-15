@@ -47,38 +47,46 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true)
   const [showProfile, setShowProfile] = useState(false)
 
+  const isAgent = user?.role === 'AGENT' || user?.role === 'ADMIN'
+
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
         setLoading(true)
         
-        if (user?.role === 'AGENT') {
+        if (isAgent) {
           // Fetch agent-specific data
           const [propertiesRes, inquiriesRes] = await Promise.all([
             propertyApi.getMyProperties(),
             inquiryApi.getInquiries()
           ])
           
-          setRecentProperties(propertiesRes.data.slice(0, 5))
-          setRecentInquiries(inquiriesRes.data.slice(0, 5))
+          const properties = propertiesRes.data.data || []
+          const inquiries = inquiriesRes.data.inquiries || []
+
+          setRecentProperties(properties.slice(0, 5))
+          setRecentInquiries(inquiries.slice(0, 5))
           
           setStats({
-            totalProperties: propertiesRes.data.length,
-            totalInquiries: inquiriesRes.data.length,
-            totalViews: propertiesRes.data.reduce((sum: number, prop: any) => sum + (prop.viewCount || 0), 0)
+            totalProperties: propertiesRes.data.pagination?.total || properties.length,
+            totalInquiries: inquiriesRes.data.pagination?.total || inquiries.length,
+            totalViews: properties.reduce((sum: number, prop: any) => sum + (prop.views || 0), 0)
           })
         } else {
           // Fetch user-specific data
           const [favoritesRes, inquiriesRes] = await Promise.all([
             propertyApi.getFavorites(),
-            inquiryApi.getInquiries()
+            inquiryApi.getUserInquiries()
           ])
           
+          const favorites = favoritesRes.data.favorites || []
+          const inquiries = inquiriesRes.data.inquiries || []
+
           setStats({
-            totalFavorites: favoritesRes.data.length,
-            totalInquiries: inquiriesRes.data.length
+            totalFavorites: favoritesRes.data.pagination?.total || favorites.length,
+            totalInquiries: inquiriesRes.data.pagination?.total || inquiries.length
           })
-          setRecentInquiries(inquiriesRes.data.slice(0, 5))
+          setRecentInquiries(inquiries.slice(0, 5))
         }
       } catch (error) {
         console.error('Error fetching dashboard data:', error)
@@ -90,7 +98,7 @@ export default function Dashboard() {
     if (user) {
       fetchDashboardData()
     }
-  }, [user])
+  }, [user, isAgent])
 
   if (loading) {
     return (
@@ -148,7 +156,7 @@ export default function Dashboard() {
               Welcome back, {user?.firstName}!
             </h1>
             <p className="text-gray-600">
-              {user?.role === 'AGENT' 
+              {isAgent 
                 ? 'Manage your properties and track inquiries' 
                 : 'Discover your dream property and track your favorites'
               }
@@ -176,7 +184,7 @@ export default function Dashboard() {
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          {user?.role === 'AGENT' ? (
+          {isAgent ? (
             <>
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -275,7 +283,7 @@ export default function Dashboard() {
         <div className="mb-8">
           <h2 className="text-xl font-semibold mb-4">Quick Actions</h2>
           <div className="flex flex-wrap gap-4">
-            {user?.role === 'AGENT' ? (
+            {isAgent ? (
               <>
                 <Link href="/properties/new">
                   <Button className="flex items-center gap-2">
@@ -328,22 +336,22 @@ export default function Dashboard() {
         </div>
 
         {/* Content Tabs */}
-        <Tabs defaultValue={user?.role === 'AGENT' ? 'properties' : 'favorites'} className="w-full">
+        <Tabs defaultValue={isAgent ? 'properties' : 'favorites'} className="w-full">
           <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value={user?.role === 'AGENT' ? 'properties' : 'favorites'}>
-              {user?.role === 'AGENT' ? 'Recent Properties' : 'Favorite Properties'}
+            <TabsTrigger value={isAgent ? 'properties' : 'favorites'}>
+              {isAgent ? 'Recent Properties' : 'Favorite Properties'}
             </TabsTrigger>
             <TabsTrigger value="inquiries">Recent Inquiries</TabsTrigger>
           </TabsList>
           
-          <TabsContent value={user?.role === 'AGENT' ? 'properties' : 'favorites'} className="space-y-4">
+          <TabsContent value={isAgent ? 'properties' : 'favorites'} className="space-y-4">
             <Card>
               <CardHeader>
                 <CardTitle>
-                  {user?.role === 'AGENT' ? 'Your Recent Properties' : 'Your Favorite Properties'}
+                  {isAgent ? 'Your Recent Properties' : 'Your Favorite Properties'}
                 </CardTitle>
                 <CardDescription>
-                  {user?.role === 'AGENT' 
+                  {isAgent 
                     ? 'Properties you\'ve recently added' 
                     : 'Properties you\'ve saved for later'
                   }
@@ -381,7 +389,7 @@ export default function Dashboard() {
                   <div className="text-center py-8">
                     <Home className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                     <p className="text-gray-600">
-                      {user?.role === 'AGENT' 
+                      {isAgent 
                         ? 'No properties added yet. Start by adding your first property!' 
                         : 'No favorite properties yet. Browse properties to add some favorites!'
                       }
@@ -397,7 +405,7 @@ export default function Dashboard() {
               <CardHeader>
                 <CardTitle>Recent Inquiries</CardTitle>
                 <CardDescription>
-                  {user?.role === 'AGENT' 
+                  {isAgent 
                     ? 'Inquiries about your properties' 
                     : 'Your property inquiries'
                   }
@@ -415,7 +423,7 @@ export default function Dashboard() {
                           <div>
                             <h3 className="font-medium">{inquiry.subject || 'Property Inquiry'}</h3>
                             <p className="text-sm text-gray-600">
-                              {user?.role === 'AGENT' 
+                              {isAgent 
                                 ? `From: ${inquiry.user?.firstName} ${inquiry.user?.lastName}` 
                                 : `Property: ${inquiry.property?.title}`
                               }
@@ -440,7 +448,7 @@ export default function Dashboard() {
                   <div className="text-center py-8">
                     <MessageSquare className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                     <p className="text-gray-600">
-                      {user?.role === 'AGENT' 
+                      {isAgent 
                         ? 'No inquiries yet. They\'ll appear here when users contact you about your properties.' 
                         : 'No inquiries yet. Contact agents about properties you\'re interested in!'
                       }

@@ -61,11 +61,11 @@ export const propertyApi = {
   createProperty: (data: any) => api.post('/properties', data),
   updateProperty: (id: string, data: any) => api.put(`/properties/${id}`, data),
   deleteProperty: (id: string) => api.delete(`/properties/${id}`),
-  getFeaturedProperties: () => api.get('/properties/featured'),
+  getFeaturedProperties: () => api.get('/properties?featured=true'),
   searchProperties: (params: any) => api.get('/properties/search', { params }),
-  getMyProperties: () => api.get('/properties/my-properties'),
-  toggleFavorite: (propertyId: string) => api.post(`/properties/${propertyId}/favorite`),
-  getFavorites: () => api.get('/properties/favorites'),
+  getMyProperties: () => api.get('/properties/user/my-properties'),
+  toggleFavorite: (propertyId: string) => api.post('/favorites', { propertyId }),
+  getFavorites: () => api.get('/favorites'),
 }
 
 // Geocoding API endpoints
@@ -126,7 +126,8 @@ export const browsingSessionApi = {
 // Inquiry API endpoints
 export const inquiryApi = {
   createInquiry: (data: any) => api.post('/inquiries', data),
-  getInquiries: () => api.get('/inquiries'),
+  getInquiries: () => api.get('/inquiries'), // For agents/admins
+  getUserInquiries: () => api.get('/inquiries/user/my-inquiries'), // For regular users
   getInquiry: (id: string) => api.get(`/inquiries/${id}`),
   updateInquiry: (id: string, data: any) => api.put(`/inquiries/${id}`, data),
   deleteInquiry: (id: string) => api.delete(`/inquiries/${id}`),
